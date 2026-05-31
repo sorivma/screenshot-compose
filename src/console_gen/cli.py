@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from .renderer import COLOR_PROFILES, RenderOptions, THEMES, render_log_file
+from .renderer import RenderOptions, THEMES, render_log_file
 
 
 def render_command(args: argparse.Namespace) -> int:
@@ -15,7 +15,6 @@ def render_command(args: argparse.Namespace) -> int:
         title=args.title,
         theme_name=args.theme,
         frame=args.frame,
-        color_profile=args.color_profile,
     )
     render_log_file(Path(args.input).resolve(), Path(args.output).resolve(), options)
     print(f"Rendered {args.output}")
@@ -41,12 +40,6 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["windows", "mac", "ubuntu", "frameless"],
         default="windows",
         help="Terminal window frame style",
-    )
-    render_parser.add_argument(
-        "--color-profile",
-        choices=COLOR_PROFILES,
-        default="auto",
-        help="Automatic log coloring profile",
     )
     render_parser.set_defaults(func=render_command)
 

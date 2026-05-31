@@ -2,24 +2,13 @@
 
 from __future__ import annotations
 
-import re
 import textwrap
 from dataclasses import dataclass
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-from .ansi import SGR_PATTERN, TextSpan, TextStyle, parse_ansi, strip_ansi
-
-try:
-    from pygments import lex
-    from pygments.lexers.shell import BashLexer, PowerShellLexer
-    from pygments.token import Comment, Error, Generic, Keyword, Literal, Name, Number, Operator, String, Text, Token
-except ImportError:  # pragma: no cover - fallback for minimal runtime environments.
-    lex = None
-    BashLexer = None
-    PowerShellLexer = None
-    Comment = Error = Generic = Keyword = Literal = Name = Number = Operator = String = Text = Token = None
+from .ansi import TextSpan, TextStyle, parse_ansi, strip_ansi
 
 
 @dataclass(frozen=True)
@@ -97,9 +86,6 @@ AUTO_THEMES = {
     "windows": "powershell",
 }
 
-COLOR_PROFILES = ("auto", "none", "ubuntu", "powershell", "macos")
-
-
 @dataclass(frozen=True)
 class RenderOptions:
     width_chars: int = 100
@@ -112,7 +98,6 @@ class RenderOptions:
     title: str = "Terminal"
     theme_name: str = "auto"
     frame: str = "windows"
-    color_profile: str = "auto"
 
 
 def render_log_file(input_path: Path, output_path: Path, options: RenderOptions) -> Path:
@@ -126,11 +111,10 @@ def render_log_file(input_path: Path, output_path: Path, options: RenderOptions)
 def render_log(text: str, options: RenderOptions | None = None) -> Image.Image:
     options = options or RenderOptions()
     theme = _resolve_theme(options)
-    color_profile = _resolve_color_profile(options)
     regular_font, bold_font = load_fonts(options.font_size)
     metrics = _font_metrics(regular_font)
 
-    visual_lines = _build_visual_lines(text, options.width_chars, theme.text, color_profile)
+    visual_lines = _build_visual_lines(text, options.width_chars, theme.text)
     if not visual_lines:
         visual_lines = [[]]
 
@@ -175,17 +159,6 @@ def _resolve_theme(options: RenderOptions) -> TerminalTheme:
     return THEMES[theme_name]
 
 
-def _resolve_color_profile(options: RenderOptions) -> str:
-    if options.color_profile == "auto":
-        return {
-            "frameless": "ubuntu",
-            "mac": "macos",
-            "ubuntu": "ubuntu",
-            "windows": "powershell",
-        }.get(options.frame, "ubuntu")
-    return options.color_profile
-
-
 def load_fonts(size: int) -> tuple[ImageFont.FreeTypeFont | ImageFont.ImageFont, ImageFont.FreeTypeFont | ImageFont.ImageFont]:
     candidates = [
         ("C:/Windows/Fonts/CascadiaMono.ttf", "C:/Windows/Fonts/CascadiaMono.ttf"),
@@ -201,12 +174,12 @@ def load_fonts(size: int) -> tuple[ImageFont.FreeTypeFont | ImageFont.ImageFont,
     return ImageFont.load_default(), ImageFont.load_default()
 
 
-def _build_visual_lines(text: str, width_chars: int, default_fg: str, color_profile: str) -> list[list[TextSpan]]:
+def _build_visual_lines(text: str, width_chars: int, default_fg: str) -> list[list[TextSpan]]:
     visual_lines: list[list[TextSpan]] = []
     normalized = text.replace("\r\n", "\n").replace("\r", "\n").expandtabs(4)
 
     for raw_line in normalized.split("\n"):
-        spans = _parse_line(raw_line, default_fg, color_profile)
+        spans = _parse_line(raw_line, default_fg)
         if not spans:
             visual_lines.append([])
             continue
@@ -227,243 +200,8 @@ def _build_visual_lines(text: str, width_chars: int, default_fg: str, color_prof
     return visual_lines
 
 
-def _parse_line(raw_line: str, default_fg: str, color_profile: str) -> list[TextSpan]:
-    if color_profile == "none" or SGR_PATTERN.search(raw_line):
-        return parse_ansi(raw_line, default_fg)
-    return _auto_color_line(raw_line, default_fg, color_profile)
-
-
-def _auto_color_line(raw_line: str, default_fg: str, color_profile: str) -> list[TextSpan]:
-    if not raw_line:
-        return []
-
-    palette = _profile_palette(color_profile)
-    base = TextStyle(default_fg)
-    spans: list[TextSpan] = []
-
-    prompt_match = _match_prompt(raw_line, color_profile)
-    cursor = 0
-    if prompt_match:
-        for start, end, color, bold in prompt_match:
-            if start > cursor:
-                spans.append(TextSpan(raw_line[cursor:start], base))
-            spans.append(TextSpan(raw_line[start:end], TextStyle(color, bold=bold)))
-            cursor = end
-
-    tail = raw_line[cursor:]
-    if tail:
-        spans.extend(_highlight_code(tail, base, palette, color_profile))
-
-    return spans
-
-
-def _match_prompt(raw_line: str, color_profile: str) -> list[tuple[int, int, str, bool]]:
-    if color_profile == "powershell":
-        match = re.match(r"^(PS )([^>]+)(>)\s?", raw_line)
-        if not match:
-            return []
-        return [
-            (match.start(1), match.end(1), "#f3f3f3", True),
-            (match.start(2), match.end(2), "#9cdcfe", False),
-            (match.start(3), match.end(3), "#f3f3f3", True),
-        ]
-
-    match = re.match(r"^([\w.-]+@[\w.-]+)(:)([^#$]*)([#$])\s?", raw_line)
-    if match:
-        return [
-            (match.start(1), match.end(1), "#8ae234", True),
-            (match.start(2), match.end(2), "#eeeeec", False),
-            (match.start(3), match.end(3), "#729fcf", True),
-            (match.start(4), match.end(4), "#eeeeec", True),
-        ]
-
-    match = re.match(r"^([\w.-]+@[\w.-]+)(\s+)([^%]+)(\s+%)(\s?)", raw_line)
-    if match:
-        return [
-            (match.start(1), match.end(1), "#a6e22e", True),
-            (match.start(3), match.end(3), "#66d9ef", True),
-            (match.start(4), match.end(4), "#f2f2f2", True),
-        ]
-
-    match = re.match(r"^([$#%])\s?", raw_line)
-    if match:
-        return [(match.start(1), match.end(1), "#8ae234" if color_profile == "ubuntu" else "#f2f2f2", True)]
-
-    return []
-
-
-def _profile_palette(color_profile: str) -> dict[str, str]:
-    if color_profile == "powershell":
-        return {
-            "success": "#16c60c",
-            "warning": "#f9f1a5",
-            "error": "#f14c4c",
-            "path": "#9cdcfe",
-            "command": "#c586c0",
-            "number": "#b5cea8",
-            "muted": "#c8c8c8",
-            "keyword": "#569cd6",
-            "string": "#ce9178",
-            "variable": "#9cdcfe",
-            "comment": "#6a9955",
-            "operator": "#d4d4d4",
-        }
-    if color_profile == "macos":
-        return {
-            "success": "#a6e22e",
-            "warning": "#e6db74",
-            "error": "#f92672",
-            "path": "#66d9ef",
-            "command": "#ae81ff",
-            "number": "#ae81ff",
-            "muted": "#a6a6a6",
-            "keyword": "#66d9ef",
-            "string": "#e6db74",
-            "variable": "#fd971f",
-            "comment": "#75715e",
-            "operator": "#f92672",
-        }
-    return {
-        "success": "#8ae234",
-        "warning": "#fce94f",
-        "error": "#ef2929",
-        "path": "#729fcf",
-        "command": "#ad7fa8",
-        "number": "#fce94f",
-        "muted": "#d3d7cf",
-        "keyword": "#729fcf",
-        "string": "#ad7fa8",
-        "variable": "#fce94f",
-        "comment": "#888a85",
-        "operator": "#eeeeec",
-    }
-
-
-TOKEN_PATTERN = re.compile(
-    r"(https?://\S+|(?:[A-Za-z]:\\[^\s]+|/[\w./~+-]+)|\b(?:error|failed|failure|fatal|exception)\b|\b(?:warn|warning)\b|\b(?:success|successful|passed|ok|done|installed|initialized)\b|\b\d+(?:\.\d+)?%?\b|^\s*(?:\$|#|%|PS\s+[^>]+>)\s*\w[\w.-]*)",
-    re.IGNORECASE,
-)
-
-
-def _highlight_code(text: str, base: TextStyle, palette: dict[str, str], color_profile: str) -> list[TextSpan]:
-    spans = _highlight_with_pygments(text, base, palette, color_profile)
-    if spans is not None:
-        return _merge_spans(_post_highlight_log_tokens(spans, base, palette))
-    return _highlight_tokens(text, base, palette)
-
-
-def _highlight_with_pygments(
-    text: str,
-    base: TextStyle,
-    palette: dict[str, str],
-    color_profile: str,
-) -> list[TextSpan] | None:
-    if lex is None or BashLexer is None or PowerShellLexer is None:
-        return None
-
-    lexer = PowerShellLexer() if color_profile == "powershell" else BashLexer()
-    spans: list[TextSpan] = []
-    try:
-        tokens = lex(text, lexer)
-        for token_type, value in tokens:
-            if not value:
-                continue
-            if value == "\n" and not text.endswith("\n"):
-                continue
-            spans.append(TextSpan(value, _style_for_token(token_type, base, palette)))
-    except Exception:
-        return None
-
-    return spans
-
-
-def _style_for_token(token_type, base: TextStyle, palette: dict[str, str]) -> TextStyle:
-    if Text is not None and token_type in Text:
-        return base
-    if Error is not None and token_type in Error:
-        return TextStyle(palette["error"], bold=True)
-    if Comment is not None and token_type in Comment:
-        return TextStyle(palette["comment"])
-    if Keyword is not None and token_type in Keyword:
-        return TextStyle(palette["keyword"], bold=True)
-    if String is not None and token_type in String:
-        return TextStyle(palette["string"])
-    if Number is not None and token_type in Number:
-        return TextStyle(palette["number"])
-    if Token is not None and token_type in Token.Name.Builtin:
-        return TextStyle(palette["keyword"], bold=True)
-    if Name is not None and token_type in Name:
-        return TextStyle(palette["variable"] if _is_variable_token(token_type) else palette["command"])
-    if Operator is not None and token_type in Operator:
-        return TextStyle(palette["operator"])
-    if Literal is not None and token_type in Literal:
-        return TextStyle(palette["string"])
-    if Generic is not None and token_type in Generic:
-        return base
-    return base
-
-
-def _is_variable_token(token_type) -> bool:
-    return Token is not None and token_type in Token.Name.Variable
-
-
-def _post_highlight_log_tokens(spans: list[TextSpan], base: TextStyle, palette: dict[str, str]) -> list[TextSpan]:
-    result: list[TextSpan] = []
-    for span in spans:
-        if span.style == base:
-            result.extend(_highlight_tokens(span.text, span.style, palette))
-        else:
-            result.append(span)
-    return result
-
-
-def _highlight_tokens(text: str, base: TextStyle, palette: dict[str, str]) -> list[TextSpan]:
-    spans: list[TextSpan] = []
-    cursor = 0
-    for match in TOKEN_PATTERN.finditer(text):
-        if match.start() > cursor:
-            spans.append(TextSpan(text[cursor : match.start()], base))
-        token = match.group(0)
-        spans.append(TextSpan(token, TextStyle(_token_color(token, palette), bold=_is_strong_token(token))))
-        cursor = match.end()
-    if cursor < len(text):
-        spans.append(TextSpan(text[cursor:], base))
-    return spans
-
-
-def _merge_spans(spans: list[TextSpan]) -> list[TextSpan]:
-    merged: list[TextSpan] = []
-    for span in spans:
-        if not span.text:
-            continue
-        if merged and merged[-1].style == span.style:
-            previous = merged[-1]
-            merged[-1] = TextSpan(previous.text + span.text, previous.style)
-        else:
-            merged.append(span)
-    return merged
-
-
-def _token_color(token: str, palette: dict[str, str]) -> str:
-    lower = token.lower()
-    if any(word in lower for word in ("error", "failed", "failure", "fatal", "exception")):
-        return palette["error"]
-    if "warn" in lower:
-        return palette["warning"]
-    if any(word in lower for word in ("success", "successful", "passed", "ok", "done", "installed", "initialized")):
-        return palette["success"]
-    if token.startswith(("http://", "https://", "/", "~")) or re.match(r"^[A-Za-z]:\\", token):
-        return palette["path"]
-    if re.match(r"^\s*(?:\$|#|%|PS\s+[^>]+>)\s*\w", token):
-        return palette["command"]
-    if re.match(r"^\d", token):
-        return palette["number"]
-    return palette["muted"]
-
-
-def _is_strong_token(token: str) -> bool:
-    lower = token.lower()
-    return any(word in lower for word in ("error", "failed", "fatal", "success", "passed", "warning"))
+def _parse_line(raw_line: str, default_fg: str) -> list[TextSpan]:
+    return parse_ansi(raw_line, default_fg)
 
 
 def _wrap_span(span: TextSpan, width_chars: int, current_len: int) -> list[str]:

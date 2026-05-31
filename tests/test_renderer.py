@@ -32,30 +32,17 @@ def test_frameless_render_has_no_titlebar_height():
     assert frameless.size[1] < framed.size[1]
 
 
-def test_auto_coloring_highlights_ubuntu_prompt():
-    spans = _parse_line("sorivma@ubuntu:~/lab$ pytest", "#eeeeec", "ubuntu")
+def test_plain_text_uses_theme_color_without_auto_coloring():
+    spans = _parse_line("sorivma@ubuntu:~/lab$ pytest", "#eeeeec")
 
-    assert spans[0].text == "sorivma@ubuntu"
-    assert spans[0].style.fg == "#8ae234"
-    assert any(span.style.fg != "#eeeeec" for span in spans)
-
-
-def test_auto_coloring_highlights_macos_prompt():
-    spans = _parse_line("sorivma@MacBook-Pro lab % pytest", "#f2f2f2", "macos")
-
-    assert spans[0].text == "sorivma@MacBook-Pro"
-    assert spans[0].style.fg == "#a6e22e"
+    assert [span.text for span in spans] == ["sorivma@ubuntu:~/lab$ pytest"]
+    assert spans[0].style.fg == "#eeeeec"
+    assert not spans[0].style.bold
 
 
-def test_auto_coloring_uses_shell_lexer_for_commands():
-    spans = _parse_line("$ export NAME='lab'", "#eeeeec", "ubuntu")
+def test_parse_line_preserves_ansi_colors():
+    spans = _parse_line("ok \x1b[31mfail\x1b[0m", "#eeeeec")
 
-    assert any(span.text == "export" and span.style.fg == "#729fcf" for span in spans)
-    assert any(span.text == "'lab'" and span.style.fg == "#ad7fa8" for span in spans)
-
-
-def test_auto_coloring_uses_powershell_lexer_for_commands():
-    spans = _parse_line("PS C:\\lab> Write-Host 'ok'", "#f3f3f3", "powershell")
-
-    assert any(span.text == "Write-Host" and span.style.fg == "#569cd6" for span in spans)
-    assert any(span.text == "'ok'" and span.style.fg == "#ce9178" for span in spans)
+    assert [span.text for span in spans] == ["ok ", "fail"]
+    assert spans[0].style.fg == "#eeeeec"
+    assert spans[1].style.fg != "#eeeeec"

@@ -7,9 +7,8 @@
 - PNG output with transparent outer margins.
 - Window frames for Windows Terminal, macOS Terminal, Ubuntu Terminal, and frameless terminal blocks.
 - Automatic terminal theme selection with `--theme auto`.
-- Automatic log coloring with `--color-profile auto`.
 - ANSI SGR support: real colorized command output is preserved when the input log contains escape codes.
-- Pygments-based fallback highlighting for shell and PowerShell logs that do not contain ANSI codes.
+- Logs without ANSI escape codes are rendered with the selected theme text color.
 - Long logs are rendered as tall screenshots with automatic line wrapping.
 
 ## Examples
@@ -70,13 +69,7 @@ Available themes:
 auto, dark, light, macos, powershell, ubuntu
 ```
 
-Available color profiles:
-
-```text
-auto, none, ubuntu, powershell, macos
-```
-
-By default, `--theme auto` and `--color-profile auto` choose colors from the selected frame. ANSI colors in the input log take priority over automatic highlighting.
+By default, `--theme auto` chooses colors from the selected frame. ANSI colors in the input log are preserved; plain text is not automatically highlighted.
 
 ## Saving ANSI Logs
 
