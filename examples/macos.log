@@ -1,0 +1,16 @@
+sorivma@MacBook-Pro lab % terraform init
+Initializing the backend...
+Initializing provider plugins...
+- Finding hashicorp/null versions matching ">= 3.0.0"...
+- Installing hashicorp/null v3.2.4...
+- Installed hashicorp/null v3.2.4 (signed by HashiCorp)
+
+Terraform has been successfully initialized!
+
+sorivma@MacBook-Pro lab % pytest
+============================= test session starts =============================
+collected 4 items
+
+tests/test_lab.py ....                                                    [100%]
+
+============================== 4 passed in 0.13s ==============================
