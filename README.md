@@ -1,116 +1,19 @@
-﻿# screenshot-compose
+# screenshot-compose
 
-`screenshot-compose` renders terminal logs and source code into polished PNG screenshots from CLI flags or compose-style YAML project files. It is built for documentation, coursework, reports, and repeatable screenshot pipelines where plain pasted text is not enough.
+`screenshot-compose` renders terminal logs and source code into polished PNG screenshots. It can be used as a regular CLI for one-off images, but its primary workflow is a compose-style YAML file that declares many screenshot resources with shared defaults.
 
-## Features
+Use it for documentation, coursework, reports, tutorials, changelogs, and repeatable screenshot pipelines where pasted plain text is not enough.
 
-- PNG output with transparent outer margins.
-- Window frames for Windows Terminal, macOS Terminal, Ubuntu Terminal, and frameless terminal blocks.
-- Automatic terminal theme selection with `--theme auto`.
-- ANSI SGR support: real colorized command output is preserved when the input log contains escape codes.
-- Logs without ANSI escape codes are rendered with the selected theme text color.
-- Source code rendering with syntax highlighting for any language supported by Pygments.
-- Syntax presets inspired by VS Code and IntelliJ IDEA.
-- Optional editor-style line numbers with configurable start number and VS Code or IntelliJ IDEA gutter styling.
-- VS Code-style vertical indentation guides for source code previews.
-- Tight output mode with configurable outer margin and content padding.
-- Square corners by default, with optional rounded corners.
-- Built-in themes are stored as JSON resources and can be extended or overridden with custom JSON theme files.
-- JSON render configs for reusable frame, typography, spacing, and syntax settings.
-- Compose-style YAML project files for rendering multiple named resources with shared defaults.
-- Long lines expand the image width by default. Optional wrapping can be enabled with `--wrap-lines`.
+## What It Does
 
-## Examples
-
-Frame examples:
-
-| Windows | macOS |
-| --- | --- |
-| ![Windows terminal screenshot](examples/frames/sample-windows.png) | ![macOS terminal screenshot](examples/frames/sample-macos.png) |
-
-| Ubuntu | Frameless |
-| --- | --- |
-| ![Ubuntu terminal screenshot](examples/frames/sample-ubuntu.png) | ![Frameless terminal block](examples/frames/sample-frameless.png) |
-
-Code examples:
-
-| Python | Vagrantfile | Ansible |
-| --- | --- | --- |
-| ![Python code screenshot](examples/frames/sample-python-code.png) | ![Vagrantfile screenshot](examples/frames/sample-vagrantfile.png) | ![Ansible playbook screenshot](examples/frames/sample-ansible-playbook.png) |
-
-Line number styles:
-
-| VS Code | IntelliJ IDEA |
-| --- | --- |
-| ![VS Code line numbers](examples/syntax/syntax-vscode-line-numbers.png) | ![IntelliJ IDEA line numbers](examples/syntax/syntax-idea-line-numbers.png) |
-
-Tight output with `--margin 0 --padding-x 0 --padding-y 0`:
-
-| Frameless | VS Code Lines | IntelliJ IDEA Lines |
-| --- | --- | --- |
-| ![Tight frameless terminal block](examples/frames/sample-frameless-tight.png) | ![Tight VS Code line numbers](examples/syntax/syntax-vscode-line-numbers-tight.png) | ![Tight IntelliJ IDEA line numbers](examples/syntax/syntax-idea-line-numbers-tight.png) |
-
-Language examples:
-
-| TypeScript / VS Code | Go / IntelliJ IDEA |
-| --- | --- |
-| ![TypeScript rendered with VS Code styling](examples/languages/language-typescript-vscode.png) | ![Go rendered with IntelliJ IDEA styling](examples/languages/language-go-idea.png) |
-
-| SQL / GitHub Light | TOML / Catppuccin Mocha |
-| --- | --- |
-| ![SQL rendered with GitHub Light](examples/languages/language-sql-github-light.png) | ![TOML rendered with Catppuccin Mocha](examples/languages/language-toml-catppuccin.png) |
-
-Framework examples:
-
-| React / VS Code | Vue / VS Code Light |
-| --- | --- |
-| ![React rendered with VS Code styling](examples/frameworks/framework-react-vscode.png) | ![Vue rendered with VS Code Light styling](examples/frameworks/framework-vue-vscode-light.png) |
-
-| Complex React / VS Code |
-| --- |
-| ![Complex React rendered with VS Code styling](examples/frameworks/framework-react-complex-vscode.png) |
-
-| FastAPI / IntelliJ IDEA | Django / IntelliJ IDEA Light |
-| --- | --- |
-| ![FastAPI rendered with IntelliJ IDEA styling](examples/frameworks/framework-fastapi-idea.png) | ![Django rendered with IntelliJ IDEA Light styling](examples/frameworks/framework-django-idea-light.png) |
-
-| Spring Boot / IntelliJ IDEA Light |
-| --- |
-| ![Spring Boot rendered with IntelliJ IDEA Light styling](examples/frameworks/framework-spring-idea-light.png) |
-
-Long output:
-
-![Long Ubuntu console output](examples/frames/sample-long-ubuntu.png)
-
-Code input examples:
-
-```text
-examples/inputs/example.py
-examples/inputs/Vagrantfile
-examples/inputs/ansible-playbook.yml
-examples/inputs/app.ts
-examples/inputs/server.go
-examples/inputs/query.sql
-examples/inputs/settings.toml
-examples/inputs/react-dashboard.tsx
-examples/inputs/complex-dashboard.tsx
-examples/inputs/vue-profile.vue
-examples/inputs/fastapi_app.py
-examples/inputs/django_models.py
-examples/inputs/SpringApplication.java
-examples/inputs/code-render.json
-```
-
-Example directories:
-
-```text
-examples/frames      Terminal frames and tight terminal blocks
-examples/syntax      Syntax theme gallery and editor line-number styles
-examples/languages   Multi-language code previews
-examples/frameworks  Framework-oriented React, Vue, FastAPI, Django, and Spring previews
-examples/themes      Terminal theme gallery
-examples/inputs      Source files and logs used to generate the examples
-```
+- Renders terminal logs and source code to PNG.
+- Preserves ANSI SGR colors from captured command output.
+- Syntax-highlights source code through Pygments.
+- Supports Windows Terminal, macOS Terminal, Ubuntu Terminal, and frameless blocks.
+- Provides built-in terminal and syntax themes.
+- Adds optional editor-style line numbers and indentation guides.
+- Uses YAML project files to render multiple named screenshots consistently.
+- Keeps a direct CLI path for quick one-off renders.
 
 ## Installation
 
@@ -126,129 +29,17 @@ For development with tests:
 pip install --user -e .[dev]
 ```
 
-After installation the command is available as:
+After installation:
 
 ```powershell
 screenshot-compose --help
 ```
 
-## Usage
+The legacy command name `console-gen` is still installed as an alias for compatibility.
 
-```powershell
-screenshot-compose render -i lab.log -o build/lab-console.png
-```
+## Quick Start
 
-Common options:
-
-```powershell
-screenshot-compose render -i lab.log -o build/windows.png --frame windows
-screenshot-compose render -i lab.log -o build/macos.png --frame mac
-screenshot-compose render -i lab.log -o build/ubuntu.png --frame ubuntu
-screenshot-compose render -i lab.log -o build/block.png --frame frameless
-screenshot-compose render -i lab.log -o build/large.png --width 110 --font-size 16
-screenshot-compose render -i lab.log -o build/wrapped.png --width 110 --wrap-lines
-screenshot-compose render -i lab.log -o build/tight.png --frame frameless --margin 0 --padding-x 0 --padding-y 0
-screenshot-compose render -i lab.log -o build/rounded.png --rounded-corners --radius 12
-```
-
-Render syntax-highlighted code:
-
-```powershell
-screenshot-compose render -i examples/inputs/example.py -o build/python-code.png --content-type code --language python --syntax-theme vscode-dark
-screenshot-compose render -i examples/inputs/Vagrantfile -o build/vagrantfile.png --content-type code --language ruby --syntax-theme intellij-dark
-screenshot-compose render -i examples/inputs/ansible-playbook.yml -o build/ansible.png --content-type code --language yaml --syntax-theme vscode-light
-screenshot-compose render -i examples/inputs/example.py -o build/python-lines.png --content-type code --line-numbers --line-number-style vscode --line-number-start 100
-screenshot-compose render -i examples/inputs/example.py -o build/python-idea-lines.png --content-type code --syntax-theme intellij-dark --line-numbers --line-number-style idea
-screenshot-compose render -i examples/inputs/example.py -o build/python-no-guides.png --content-type code --line-numbers --line-number-style vscode --no-indent-guides
-```
-
-Render framework examples:
-
-```powershell
-screenshot-compose render -i examples/inputs/react-dashboard.tsx -o build/react.png --content-type code --language tsx --syntax-theme vscode-dark --line-numbers --line-number-style vscode
-screenshot-compose render -i examples/inputs/complex-dashboard.tsx -o build/react-complex.png --content-type code --language tsx --syntax-theme vscode-dark --line-numbers --line-number-style vscode
-screenshot-compose render -i examples/inputs/SpringApplication.java -o build/spring.png --content-type code --language java --syntax-theme intellij-light --line-numbers --line-number-style idea
-```
-
-Language detection is enabled by default for code mode, using the input filename and content:
-
-```powershell
-screenshot-compose render -i examples/inputs/ansible-playbook.yml -o build/ansible-auto.png --content-type code
-```
-
-List available built-in themes:
-
-```powershell
-screenshot-compose themes
-```
-
-For repeatable output, use a JSON config:
-
-```powershell
-screenshot-compose render -i examples/inputs/example.py -o build/python-config.png --config examples/inputs/code-render.json --language python
-```
-
-Config keys map to `RenderOptions` fields. Short aliases `width` and `theme` are also accepted:
-
-```json
-{
-  "content_type": "code",
-  "syntax_theme": "vscode-dark",
-  "frame": "mac",
-  "title": "Source Preview",
-  "width_chars": 88,
-  "wrap_lines": false,
-  "font_size": 15,
-  "line_spacing": 6,
-  "padding_x": 24,
-  "padding_y": 20,
-  "margin": 14,
-  "radius": 12,
-  "rounded_corners": false,
-  "line_numbers": true,
-  "line_number_start": 1,
-  "line_number_style": "vscode",
-  "indent_guides": true,
-  "indent_size": 4
-}
-```
-
-For larger sets of screenshots, use a YAML project file:
-
-```powershell
-screenshot-compose apply -f examples/screenshot-compose.yml
-screenshot-compose apply -f examples/screenshot-compose.yml python ansible
-```
-
-## YAML Project Files
-
-YAML project files are the main interface for repeatable screenshot sets. A project file describes named render resources, shared defaults, input files, output files, and per-resource overrides.
-
-By default, `apply` looks for `screenshot-compose.yml` in the current directory:
-
-```powershell
-screenshot-compose apply
-```
-
-Use `-f` to point at another file, and pass resource names to render only part of the project:
-
-```powershell
-screenshot-compose apply -f docs/screenshots.yml
-screenshot-compose apply -f docs/screenshots.yml api-log python-example
-```
-
-Minimal project:
-
-```yaml
-version: 1
-
-renders:
-  api-log:
-    input: logs/api.log
-    output: build/api-log.png
-```
-
-Project with shared defaults:
+Create `screenshot-compose.yml`:
 
 ```yaml
 version: 1
@@ -258,27 +49,158 @@ defaults:
     width: 88
     font_size: 15
     frame: mac
+
+renders:
+  api-log:
+    input: logs/api.log
+    output: build/api-log.png
+    title: API Server
+
+  app-code:
+    input: src/app.py
+    output: build/app-code.png
     content_type: code
+    language: python
+    syntax_theme: vscode-dark
+    line_numbers: true
+    line_number_style: vscode
+```
+
+Render all resources:
+
+```powershell
+screenshot-compose apply
+```
+
+Render only selected resources:
+
+```powershell
+screenshot-compose apply api-log
+```
+
+Use a project file from another location:
+
+```powershell
+screenshot-compose apply -f docs/screenshots.yml
+```
+
+## YAML Project Files
+
+YAML project files are the main interface for repeatable screenshot sets. They describe named render resources, common defaults, input files, output files, and per-resource overrides.
+
+Minimal project:
+
+```yaml
+version: 1
+
+renders:
+  build-log:
+    input: logs/build.log
+    output: build/build-log.png
+```
+
+Project with shared defaults:
+
+```yaml
+version: 1
+
+defaults:
+  render:
+    width: 100
+    font_size: 16
+    frame: windows
+    theme: auto
+
+renders:
+  tests:
+    input: logs/tests.log
+    output: build/tests.png
+    title: pytest
+
+  deploy:
+    input: logs/deploy.log
+    output: build/deploy.png
+    frame: ubuntu
+    title: Deploy
+```
+
+Code rendering:
+
+```yaml
+version: 1
+
+defaults:
+  render:
+    content_type: code
+    frame: mac
+    width: 88
+    font_size: 15
     syntax_theme: vscode-dark
     line_numbers: true
     line_number_style: vscode
 
 renders:
   python:
-    input: inputs/example.py
-    output: ../build/project-python.png
+    input: src/app.py
+    output: build/app-python.png
     language: python
+    title: app.py
 
-  terminal:
-    input: inputs/sample.log
-    output: ../build/project-terminal.png
-    content_type: log
-    frame: windows
-    theme: powershell
-    line_numbers: false
+  react:
+    input: src/App.tsx
+    output: build/react-component.png
+    language: tsx
+    title: App.tsx
+
+  java-idea:
+    input: src/Main.java
+    output: build/main-java.png
+    language: java
+    syntax_theme: intellij-light
+    line_number_style: idea
 ```
 
-Paths in project files are resolved relative to the project file location. Resource-level values override `defaults.render`.
+Tight frameless snippets:
+
+```yaml
+version: 1
+
+defaults:
+  render:
+    frame: frameless
+    margin: 0
+    padding_x: 0
+    padding_y: 0
+    width: 72
+
+renders:
+  command-output:
+    input: logs/snippet.log
+    output: build/snippet.png
+```
+
+Custom themes:
+
+```yaml
+version: 1
+
+defaults:
+  render:
+    theme_file: themes.json
+    theme: lab
+
+renders:
+  lab-log:
+    input: logs/lab.log
+    output: build/lab-log.png
+
+  lab-code:
+    input: app.py
+    output: build/app.png
+    content_type: code
+    language: python
+    syntax_theme: lab-code
+```
 
 Full project-file shape:
 
@@ -287,7 +209,7 @@ version: 1
 
 defaults:
   render:
-    # Any render option from the table below.
+    # Any render option from the option reference.
     width: 100
     frame: windows
     content_type: log
@@ -317,7 +239,7 @@ Rules:
 - `version` is optional; when omitted it behaves as `1`. Only version `1` is supported.
 - `renders` is required and must contain at least one named resource.
 - Each resource must define `input` and `output`.
-- `defaults.render` is optional. It can contain any render option.
+- `defaults.render` is optional and can contain any render option.
 - Resource options override `defaults.render`.
 - Options can be placed directly on a resource or inside `options`.
 - If the same option exists both directly on a resource and inside `options`, the value inside `options` wins.
@@ -332,7 +254,58 @@ width: 88     # same as width_chars: 88
 theme: nord   # same as theme_name: nord
 ```
 
-Render options:
+## CLI Usage
+
+Render a single terminal log:
+
+```powershell
+screenshot-compose render -i lab.log -o build/lab-console.png
+```
+
+Common terminal variants:
+
+```powershell
+screenshot-compose render -i lab.log -o build/windows.png --frame windows
+screenshot-compose render -i lab.log -o build/macos.png --frame mac
+screenshot-compose render -i lab.log -o build/ubuntu.png --frame ubuntu
+screenshot-compose render -i lab.log -o build/block.png --frame frameless
+screenshot-compose render -i lab.log -o build/wrapped.png --width 110 --wrap-lines
+screenshot-compose render -i lab.log -o build/tight.png --frame frameless --margin 0 --padding-x 0 --padding-y 0
+screenshot-compose render -i lab.log -o build/rounded.png --rounded-corners --radius 12
+```
+
+Render source code:
+
+```powershell
+screenshot-compose render -i examples/inputs/example.py -o build/python-code.png --content-type code --language python --syntax-theme vscode-dark
+screenshot-compose render -i examples/inputs/ansible-playbook.yml -o build/ansible.png --content-type code --language yaml --syntax-theme vscode-light
+screenshot-compose render -i examples/inputs/example.py -o build/python-lines.png --content-type code --line-numbers --line-number-style vscode
+screenshot-compose render -i examples/inputs/example.py -o build/python-idea-lines.png --content-type code --syntax-theme intellij-dark --line-numbers --line-number-style idea
+```
+
+Language detection is enabled by default for code mode:
+
+```powershell
+screenshot-compose render -i examples/inputs/ansible-playbook.yml -o build/ansible-auto.png --content-type code
+```
+
+List available themes:
+
+```powershell
+screenshot-compose themes
+```
+
+Use a JSON or YAML config for one-off `render` commands:
+
+```powershell
+screenshot-compose render -i examples/inputs/example.py -o build/python-config.png --config examples/inputs/code-render.json --language python
+```
+
+Config keys map to the render options below. `width` and `theme` aliases are accepted.
+
+## Render Option Reference
+
+These keys can be used in `defaults.render`, directly on a YAML resource, inside a resource `options` block, or in a JSON/YAML file passed to `render --config`.
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -355,104 +328,25 @@ Render options:
 | `language` | string or null | `null` | Pygments lexer alias, such as `python`, `yaml`, `tsx`, `java`, `go`, or `sql`. |
 | `syntax_theme` | string | `vscode-dark` | Syntax theme used when `content_type: code`. |
 | `guess_language` | boolean | `true` | Try to infer the lexer from filename/content when `language` is not set. |
-| `theme_file` | string or null | `null` | JSON file with custom terminal and syntax themes. Relative paths resolve from the YAML file directory. |
+| `theme_file` | string or null | `null` | JSON file with custom terminal and syntax themes. Relative paths resolve from the config/project file directory. |
 | `line_numbers` | boolean | `false` | Render editor-style line numbers in a left gutter. |
 | `line_number_start` | integer | `1` | First rendered line number. Wrapped continuation lines do not receive numbers. |
 | `line_number_style` | string | `plain` | Gutter style: `plain`, `vscode`, or `idea`. |
 | `indent_guides` | boolean or null | `null` | Render vertical indentation guides. When omitted, enabled for code with `line_number_style: vscode`. |
 | `indent_size` | integer | `4` | Number of spaces between indentation guide columns. |
 
-Example: terminal logs with several frames:
+Important behavior:
 
-```yaml
-version: 1
+- `width_chars` is a minimum width. Long lines expand the image width unless `wrap_lines: true` is used.
+- `line_number_style: idea` uses a larger default line spacing than `plain` and `vscode`.
+- `line_number_style: vscode` enables indentation guides by default for code rendering.
+- `theme: auto` chooses terminal colors from the selected frame.
+- ANSI colors in log input are preserved; plain log text is not automatically highlighted.
 
-defaults:
-  render:
-    content_type: log
-    width: 100
-    font_size: 16
-    theme: auto
+Available frames:
 
-renders:
-  windows-build:
-    input: logs/build.log
-    output: build/windows-build.png
-    frame: windows
-    title: Build
-
-  ubuntu-tests:
-    input: logs/tests.log
-    output: build/ubuntu-tests.png
-    frame: ubuntu
-    title: pytest
-
-  frameless-snippet:
-    input: logs/snippet.log
-    output: build/snippet.png
-    frame: frameless
-    margin: 0
-    padding_x: 0
-    padding_y: 0
-```
-
-Example: source-code screenshots:
-
-```yaml
-version: 1
-
-defaults:
-  render:
-    content_type: code
-    frame: mac
-    width: 88
-    font_size: 15
-    line_numbers: true
-    line_number_style: vscode
-    syntax_theme: vscode-dark
-
-renders:
-  python:
-    input: src/app.py
-    output: build/app-python.png
-    language: python
-    title: app.py
-
-  react:
-    input: src/App.tsx
-    output: build/react-component.png
-    language: tsx
-    title: App.tsx
-
-  idea-java:
-    input: src/Main.java
-    output: build/main-java.png
-    language: java
-    syntax_theme: intellij-light
-    line_number_style: idea
-```
-
-Example: custom theme file:
-
-```yaml
-version: 1
-
-defaults:
-  render:
-    theme_file: themes.json
-    theme: lab
-
-renders:
-  custom-log:
-    input: logs/lab.log
-    output: build/lab-log.png
-
-  custom-code:
-    input: app.py
-    output: build/app.png
-    content_type: code
-    language: python
-    syntax_theme: lab-code
+```text
+windows, mac, ubuntu, frameless
 ```
 
 Available line number styles:
@@ -461,19 +355,7 @@ Available line number styles:
 plain, vscode, idea
 ```
 
-If `line_spacing` is omitted, `idea` line number style uses a larger default spacing than `plain` and `vscode`. Set `line_spacing` explicitly to override the style default.
-
-When rendering code, `line_number_style: "vscode"` enables vertical indentation guides by default. Use `indent_guides: false` or `--no-indent-guides` to disable them, and `indent_size` or `--indent-size` to change the spacing.
-
-`width_chars` is a minimum width. Long lines expand the image width unless `wrap_lines: true` or `--wrap-lines` is used.
-
-Available frames:
-
-```text
-windows, mac, ubuntu, frameless
-```
-
-Available themes:
+Available terminal themes:
 
 ```text
 auto, catppuccin-latte, catppuccin-mocha, dark, dracula, github-dark,
@@ -491,7 +373,83 @@ one-dark, rose-pine, solarized-dark, solarized-light, tokyo-night,
 vscode-dark, vscode-light
 ```
 
-By default, `--theme auto` chooses colors from the selected frame. ANSI colors in the input log are preserved; plain text is not automatically highlighted.
+## Examples Gallery
+
+Frame examples:
+
+| Windows | macOS |
+| --- | --- |
+| ![Windows terminal screenshot](examples/frames/sample-windows.png) | ![macOS terminal screenshot](examples/frames/sample-macos.png) |
+
+| Ubuntu | Frameless |
+| --- | --- |
+| ![Ubuntu terminal screenshot](examples/frames/sample-ubuntu.png) | ![Frameless terminal block](examples/frames/sample-frameless.png) |
+
+Code examples:
+
+| Python | Vagrantfile | Ansible |
+| --- | --- | --- |
+| ![Python code screenshot](examples/frames/sample-python-code.png) | ![Vagrantfile screenshot](examples/frames/sample-vagrantfile.png) | ![Ansible playbook screenshot](examples/frames/sample-ansible-playbook.png) |
+
+Line number styles:
+
+| VS Code | IntelliJ IDEA |
+| --- | --- |
+| ![VS Code line numbers](examples/syntax/syntax-vscode-line-numbers.png) | ![IntelliJ IDEA line numbers](examples/syntax/syntax-idea-line-numbers.png) |
+
+Tight output with `margin: 0`, `padding_x: 0`, and `padding_y: 0`:
+
+| Frameless | VS Code Lines | IntelliJ IDEA Lines |
+| --- | --- | --- |
+| ![Tight frameless terminal block](examples/frames/sample-frameless-tight.png) | ![Tight VS Code line numbers](examples/syntax/syntax-vscode-line-numbers-tight.png) | ![Tight IntelliJ IDEA line numbers](examples/syntax/syntax-idea-line-numbers-tight.png) |
+
+Language examples:
+
+| TypeScript / VS Code | Go / IntelliJ IDEA |
+| --- | --- |
+| ![TypeScript rendered with VS Code styling](examples/languages/language-typescript-vscode.png) | ![Go rendered with IntelliJ IDEA styling](examples/languages/language-go-idea.png) |
+
+| SQL / GitHub Light | TOML / Catppuccin Mocha |
+| --- | --- |
+| ![SQL rendered with GitHub Light](examples/languages/language-sql-github-light.png) | ![TOML rendered with Catppuccin Mocha](examples/languages/language-toml-catppuccin.png) |
+
+Framework examples:
+
+| React / VS Code | Vue / VS Code Light |
+| --- | --- |
+| ![React rendered with VS Code styling](examples/frameworks/framework-react-vscode.png) | ![Vue rendered with VS Code Light styling](examples/frameworks/framework-vue-vscode-light.png) |
+
+| FastAPI / IntelliJ IDEA | Django / IntelliJ IDEA Light |
+| --- | --- |
+| ![FastAPI rendered with IntelliJ IDEA styling](examples/frameworks/framework-fastapi-idea.png) | ![Django rendered with IntelliJ IDEA Light styling](examples/frameworks/framework-django-idea-light.png) |
+
+| Spring Boot / IntelliJ IDEA Light |
+| --- |
+| ![Spring Boot rendered with IntelliJ IDEA Light styling](examples/frameworks/framework-spring-idea-light.png) |
+
+Long output:
+
+![Long Ubuntu console output](examples/frames/sample-long-ubuntu.png)
+
+Example project and input files:
+
+```text
+examples/screenshot-compose.yml
+examples/inputs/example.py
+examples/inputs/Vagrantfile
+examples/inputs/ansible-playbook.yml
+examples/inputs/app.ts
+examples/inputs/server.go
+examples/inputs/query.sql
+examples/inputs/settings.toml
+examples/inputs/react-dashboard.tsx
+examples/inputs/complex-dashboard.tsx
+examples/inputs/vue-profile.vue
+examples/inputs/fastapi_app.py
+examples/inputs/django_models.py
+examples/inputs/SpringApplication.java
+examples/inputs/code-render.json
+```
 
 ## Built-in Theme Gallery
 
@@ -551,7 +509,7 @@ Syntax theme presets:
 | --- | --- | --- |
 | ![Rose Pine syntax theme](examples/syntax/syntax-rose-pine.png) | ![GitHub Dark syntax theme](examples/syntax/syntax-github-dark.png) | ![GitHub Light syntax theme](examples/syntax/syntax-github-light.png) |
 
-## Custom Themes
+## Custom Theme Files
 
 Custom theme files use the same JSON shape as the built-in theme resource. They are merged with built-in themes, so a file can add only the themes it needs:
 
@@ -581,6 +539,25 @@ Custom theme files use the same JSON shape as the built-in theme resource. They 
 }
 ```
 
+Use it from YAML:
+
+```yaml
+version: 1
+
+defaults:
+  render:
+    theme_file: themes.json
+    theme: lab
+
+renders:
+  app:
+    input: app.py
+    output: build/app.png
+    content_type: code
+    language: python
+    syntax_theme: lab-code
+```
+
 Use it from the CLI:
 
 ```powershell
@@ -589,9 +566,7 @@ screenshot-compose render -i lab.log -o build/lab.png --theme-file themes.json -
 screenshot-compose render -i app.py -o build/app.png --content-type code --theme-file themes.json --theme lab --syntax-theme lab-code
 ```
 
-The same `theme_file`, `theme`, and `syntax_theme` keys can be placed in a render config. Relative `theme_file` paths are resolved from the config file directory.
-
-## Saving ANSI Logs
+## Capturing ANSI Logs
 
 Many CLI tools disable colors when output is redirected to a file. Force colors and save with `tee` or `Tee-Object`.
 
@@ -620,6 +595,8 @@ python -c "print(repr(open('lab.log', encoding='utf-8').read()[:300]))"
 Look for sequences such as `\x1b[32m` and `\x1b[0m`.
 
 ## Development
+
+Run tests:
 
 ```powershell
 pytest
