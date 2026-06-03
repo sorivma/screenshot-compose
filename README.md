@@ -220,7 +220,35 @@ screenshot-compose apply -f examples/screenshot-compose.yml
 screenshot-compose apply -f examples/screenshot-compose.yml python ansible
 ```
 
-Project files describe named render resources with shared defaults:
+## YAML Project Files
+
+YAML project files are the main interface for repeatable screenshot sets. A project file describes named render resources, shared defaults, input files, output files, and per-resource overrides.
+
+By default, `apply` looks for `screenshot-compose.yml` in the current directory:
+
+```powershell
+screenshot-compose apply
+```
+
+Use `-f` to point at another file, and pass resource names to render only part of the project:
+
+```powershell
+screenshot-compose apply -f docs/screenshots.yml
+screenshot-compose apply -f docs/screenshots.yml api-log python-example
+```
+
+Minimal project:
+
+```yaml
+version: 1
+
+renders:
+  api-log:
+    input: logs/api.log
+    output: build/api-log.png
+```
+
+Project with shared defaults:
 
 ```yaml
 version: 1
@@ -251,6 +279,181 @@ renders:
 ```
 
 Paths in project files are resolved relative to the project file location. Resource-level values override `defaults.render`.
+
+Full project-file shape:
+
+```yaml
+version: 1
+
+defaults:
+  render:
+    # Any render option from the table below.
+    width: 100
+    frame: windows
+    content_type: log
+
+renders:
+  resource-name:
+    input: path/to/input.log
+    output: path/to/output.png
+
+    # Options can be written directly on the resource.
+    title: Terminal
+    theme: auto
+
+  nested-options-example:
+    input: path/to/source.py
+    output: path/to/source.png
+
+    # Or under options. Direct resource keys and options are merged.
+    options:
+      content_type: code
+      language: python
+      syntax_theme: vscode-dark
+```
+
+Rules:
+
+- `version` is optional; when omitted it behaves as `1`. Only version `1` is supported.
+- `renders` is required and must contain at least one named resource.
+- Each resource must define `input` and `output`.
+- `defaults.render` is optional. It can contain any render option.
+- Resource options override `defaults.render`.
+- Options can be placed directly on a resource or inside `options`.
+- If the same option exists both directly on a resource and inside `options`, the value inside `options` wins.
+- Relative `input`, `output`, and `theme_file` paths are resolved from the YAML file directory.
+- Unknown option names fail fast with an error.
+- Resources are rendered in the order they appear in the YAML file.
+
+Aliases:
+
+```yaml
+width: 88     # same as width_chars: 88
+theme: nord   # same as theme_name: nord
+```
+
+Render options:
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `width_chars` | integer | `100` | Minimum content width in monospace characters. Long lines expand the image unless `wrap_lines` is enabled. |
+| `width` | integer | alias | Short alias for `width_chars`. |
+| `wrap_lines` | boolean | `false` | Wrap long lines to `width_chars` instead of expanding the image width. |
+| `font_size` | integer | `16` | Font size in pixels. |
+| `line_spacing` | integer or null | `null` | Extra pixels between text lines. When omitted, defaults depend on line-number style. |
+| `padding_x` | integer | `22` | Horizontal padding inside the terminal window. |
+| `padding_y` | integer | `18` | Vertical padding inside the terminal window. |
+| `margin` | integer or null | `null` | Transparent outer margin. When omitted, frameless renders use `14`, framed renders use `24`. |
+| `titlebar_height` | integer | `38` | Titlebar height for framed windows. Ignored by `frameless`. |
+| `radius` | integer | `10` | Window corner radius used when `rounded_corners` is enabled. |
+| `rounded_corners` | boolean | `false` | Enable rounded window corners. |
+| `title` | string | `Terminal` | Window title text. Long titles are shortened. |
+| `theme_name` | string | `auto` | Terminal theme name. |
+| `theme` | string | alias | Short alias for `theme_name`. |
+| `frame` | string | `windows` | Window frame style: `windows`, `mac`, `ubuntu`, or `frameless`. |
+| `content_type` | string | `log` | Render mode: `log` preserves ANSI styling; `code` uses syntax highlighting. |
+| `language` | string or null | `null` | Pygments lexer alias, such as `python`, `yaml`, `tsx`, `java`, `go`, or `sql`. |
+| `syntax_theme` | string | `vscode-dark` | Syntax theme used when `content_type: code`. |
+| `guess_language` | boolean | `true` | Try to infer the lexer from filename/content when `language` is not set. |
+| `theme_file` | string or null | `null` | JSON file with custom terminal and syntax themes. Relative paths resolve from the YAML file directory. |
+| `line_numbers` | boolean | `false` | Render editor-style line numbers in a left gutter. |
+| `line_number_start` | integer | `1` | First rendered line number. Wrapped continuation lines do not receive numbers. |
+| `line_number_style` | string | `plain` | Gutter style: `plain`, `vscode`, or `idea`. |
+| `indent_guides` | boolean or null | `null` | Render vertical indentation guides. When omitted, enabled for code with `line_number_style: vscode`. |
+| `indent_size` | integer | `4` | Number of spaces between indentation guide columns. |
+
+Example: terminal logs with several frames:
+
+```yaml
+version: 1
+
+defaults:
+  render:
+    content_type: log
+    width: 100
+    font_size: 16
+    theme: auto
+
+renders:
+  windows-build:
+    input: logs/build.log
+    output: build/windows-build.png
+    frame: windows
+    title: Build
+
+  ubuntu-tests:
+    input: logs/tests.log
+    output: build/ubuntu-tests.png
+    frame: ubuntu
+    title: pytest
+
+  frameless-snippet:
+    input: logs/snippet.log
+    output: build/snippet.png
+    frame: frameless
+    margin: 0
+    padding_x: 0
+    padding_y: 0
+```
+
+Example: source-code screenshots:
+
+```yaml
+version: 1
+
+defaults:
+  render:
+    content_type: code
+    frame: mac
+    width: 88
+    font_size: 15
+    line_numbers: true
+    line_number_style: vscode
+    syntax_theme: vscode-dark
+
+renders:
+  python:
+    input: src/app.py
+    output: build/app-python.png
+    language: python
+    title: app.py
+
+  react:
+    input: src/App.tsx
+    output: build/react-component.png
+    language: tsx
+    title: App.tsx
+
+  idea-java:
+    input: src/Main.java
+    output: build/main-java.png
+    language: java
+    syntax_theme: intellij-light
+    line_number_style: idea
+```
+
+Example: custom theme file:
+
+```yaml
+version: 1
+
+defaults:
+  render:
+    theme_file: themes.json
+    theme: lab
+
+renders:
+  custom-log:
+    input: logs/lab.log
+    output: build/lab-log.png
+
+  custom-code:
+    input: app.py
+    output: build/app.png
+    content_type: code
+    language: python
+    syntax_theme: lab-code
+```
 
 Available line number styles:
 
