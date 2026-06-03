@@ -3,88 +3,17 @@
 from __future__ import annotations
 
 import textwrap
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from pygments import lex
+from pygments.lexers import TextLexer, get_lexer_by_name, guess_lexer, guess_lexer_for_filename
+from pygments.token import Text, Token
 
 from .ansi import TextSpan, TextStyle, parse_ansi, strip_ansi
+from .themes import AUTO_THEMES, SYNTAX_THEMES, THEMES, SyntaxTheme, TerminalTheme, load_theme_catalog
 
-
-@dataclass(frozen=True)
-class TerminalTheme:
-    background: str
-    titlebar: str
-    title_text: str
-    text: str
-    muted: str
-    border: str
-    shadow: str
-
-
-THEMES = {
-    "auto": TerminalTheme(
-        background="#111316",
-        titlebar="#24272c",
-        title_text="#d7dae0",
-        text="#e6e6e6",
-        muted="#8b949e",
-        border="#343942",
-        shadow="#000000",
-    ),
-    "dark": TerminalTheme(
-        background="#111316",
-        titlebar="#24272c",
-        title_text="#d7dae0",
-        text="#e6e6e6",
-        muted="#8b949e",
-        border="#343942",
-        shadow="#000000",
-    ),
-    "light": TerminalTheme(
-        background="#f7f7f7",
-        titlebar="#e6e8eb",
-        title_text="#2f3337",
-        text="#202327",
-        muted="#69707a",
-        border="#c9cdd3",
-        shadow="#808080",
-    ),
-    "ubuntu": TerminalTheme(
-        background="#300a24",
-        titlebar="#2c2c2c",
-        title_text="#eeeeec",
-        text="#eeeeec",
-        muted="#ad7fa8",
-        border="#4a223c",
-        shadow="#000000",
-    ),
-    "powershell": TerminalTheme(
-        background="#012456",
-        titlebar="#1f1f1f",
-        title_text="#f3f3f3",
-        text="#f3f3f3",
-        muted="#9cdcfe",
-        border="#153a70",
-        shadow="#000000",
-    ),
-    "macos": TerminalTheme(
-        background="#1e1e1e",
-        titlebar="#343434",
-        title_text="#ededed",
-        text="#f2f2f2",
-        muted="#9b9b9b",
-        border="#555555",
-        shadow="#000000",
-    ),
-}
-
-AUTO_THEMES = {
-    "frameless": "ubuntu",
-    "mac": "macos",
-    "ubuntu": "ubuntu",
-    "windows": "powershell",
-}
 
 @dataclass(frozen=True)
 class RenderOptions:
@@ -98,23 +27,52 @@ class RenderOptions:
     title: str = "Terminal"
     theme_name: str = "auto"
     frame: str = "windows"
+    content_type: str = "log"
+    language: str | None = None
+    syntax_theme: str = "vscode-dark"
+    guess_language: bool = True
+    theme_file: str | None = None
 
 
 def render_log_file(input_path: Path, output_path: Path, options: RenderOptions) -> Path:
+    return render_text_file(input_path, output_path, options)
+
+
+def render_code_file(input_path: Path, output_path: Path, options: RenderOptions | None = None) -> Path:
+    options = options or RenderOptions(content_type="code", title=input_path.name)
+    if options.content_type == "log":
+        options = replace(options, content_type="code")
+    return render_text_file(input_path, output_path, options)
+
+
+def render_text_file(input_path: Path, output_path: Path, options: RenderOptions) -> Path:
     text = input_path.read_text(encoding="utf-8-sig")
-    image = render_log(text, options)
+    image = render_text(text, options, filename=input_path.name)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     image.save(output_path)
     return output_path
 
 
 def render_log(text: str, options: RenderOptions | None = None) -> Image.Image:
+    return render_text(text, options or RenderOptions(content_type="log"))
+
+
+def render_code(text: str, options: RenderOptions | None = None, filename: str | None = None) -> Image.Image:
+    options = options or RenderOptions(content_type="code", title=filename or "Code")
+    if options.content_type == "log":
+        options = replace(options, content_type="code")
+    return render_text(text, options, filename=filename)
+
+
+def render_text(text: str, options: RenderOptions | None = None, filename: str | None = None) -> Image.Image:
     options = options or RenderOptions()
     theme = _resolve_theme(options)
+    syntax_theme = _resolve_syntax_theme(options)
     regular_font, bold_font = load_fonts(options.font_size)
     metrics = _font_metrics(regular_font)
 
-    visual_lines = _build_visual_lines(text, options.width_chars, theme.text)
+    default_fg = syntax_theme.text if options.content_type == "code" else theme.text
+    visual_lines = _build_visual_lines(text, options.width_chars, default_fg, options, filename)
     if not visual_lines:
         visual_lines = [[]]
 
@@ -153,10 +111,37 @@ def render_log(text: str, options: RenderOptions | None = None) -> Image.Image:
 
 
 def _resolve_theme(options: RenderOptions) -> TerminalTheme:
+    catalog = load_theme_catalog(options.theme_file)
     theme_name = options.theme_name
     if theme_name == "auto":
-        theme_name = AUTO_THEMES.get(options.frame, "dark")
-    return THEMES[theme_name]
+        theme_name = catalog.auto_themes.get(options.frame, "dark")
+    try:
+        theme = catalog.terminal_themes[theme_name]
+    except KeyError as exc:
+        available = ", ".join(sorted(catalog.terminal_themes))
+        raise ValueError(f"Unknown terminal theme: {theme_name}. Available themes: {available}") from exc
+    if options.content_type != "code":
+        return theme
+
+    syntax_theme = _resolve_syntax_theme(options)
+    return TerminalTheme(
+        background=syntax_theme.background,
+        titlebar=theme.titlebar,
+        title_text=theme.title_text,
+        text=syntax_theme.text,
+        muted=theme.muted,
+        border=theme.border,
+        shadow=theme.shadow,
+    )
+
+
+def _resolve_syntax_theme(options: RenderOptions) -> SyntaxTheme:
+    catalog = load_theme_catalog(options.theme_file)
+    try:
+        return catalog.syntax_themes[options.syntax_theme]
+    except KeyError as exc:
+        available = ", ".join(sorted(catalog.syntax_themes))
+        raise ValueError(f"Unknown syntax theme: {options.syntax_theme}. Available syntax themes: {available}") from exc
 
 
 def load_fonts(size: int) -> tuple[ImageFont.FreeTypeFont | ImageFont.ImageFont, ImageFont.FreeTypeFont | ImageFont.ImageFont]:
@@ -174,12 +159,35 @@ def load_fonts(size: int) -> tuple[ImageFont.FreeTypeFont | ImageFont.ImageFont,
     return ImageFont.load_default(), ImageFont.load_default()
 
 
-def _build_visual_lines(text: str, width_chars: int, default_fg: str) -> list[list[TextSpan]]:
-    visual_lines: list[list[TextSpan]] = []
+def _build_visual_lines(
+    text: str,
+    width_chars: int,
+    default_fg: str,
+    options: RenderOptions | None = None,
+    filename: str | None = None,
+) -> list[list[TextSpan]]:
+    options = options or RenderOptions()
+    if options.content_type == "code":
+        logical_lines = _highlight_code_lines(text, default_fg, options, filename)
+    else:
+        logical_lines = _parse_logical_log_lines(text, default_fg)
+    return _wrap_logical_lines(logical_lines, width_chars)
+
+
+def _parse_logical_log_lines(text: str, default_fg: str) -> list[list[TextSpan]]:
+    logical_lines: list[list[TextSpan]] = []
     normalized = text.replace("\r\n", "\n").replace("\r", "\n").expandtabs(4)
 
     for raw_line in normalized.split("\n"):
-        spans = _parse_line(raw_line, default_fg)
+        logical_lines.append(_parse_line(raw_line, default_fg))
+
+    return logical_lines
+
+
+def _wrap_logical_lines(logical_lines: list[list[TextSpan]], width_chars: int) -> list[list[TextSpan]]:
+    visual_lines: list[list[TextSpan]] = []
+
+    for spans in logical_lines:
         if not spans:
             visual_lines.append([])
             continue
@@ -198,6 +206,54 @@ def _build_visual_lines(text: str, width_chars: int, default_fg: str) -> list[li
         visual_lines.append(current)
 
     return visual_lines
+
+
+def _highlight_code_lines(
+    text: str,
+    default_fg: str,
+    options: RenderOptions,
+    filename: str | None = None,
+) -> list[list[TextSpan]]:
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n").expandtabs(4)
+    lexer = _select_lexer(normalized, options, filename)
+    lines: list[list[TextSpan]] = [[]]
+    syntax_theme = _resolve_syntax_theme(options)
+
+    for token_type, token_text in lex(normalized, lexer):
+        style = _style_for_token(token_type, syntax_theme, default_fg)
+        parts = token_text.split("\n")
+        for index, part in enumerate(parts):
+            if index:
+                lines.append([])
+            if part:
+                lines[-1].append(TextSpan(part, style))
+
+    return lines
+
+
+def _select_lexer(text: str, options: RenderOptions, filename: str | None = None):
+    if options.language:
+        return get_lexer_by_name(options.language)
+    if options.guess_language and filename:
+        try:
+            return guess_lexer_for_filename(filename, text)
+        except Exception:
+            pass
+    if options.guess_language:
+        try:
+            return guess_lexer(text)
+        except Exception:
+            pass
+    return TextLexer()
+
+
+def _style_for_token(token_type: object, syntax_theme: SyntaxTheme, default_fg: str) -> TextStyle:
+    for parent, color, bold in syntax_theme.colors:
+        if token_type in parent:
+            return TextStyle(color, bold=bold)
+    if token_type in Text or token_type is Token:
+        return TextStyle(default_fg)
+    return TextStyle(default_fg)
 
 
 def _parse_line(raw_line: str, default_fg: str) -> list[TextSpan]:

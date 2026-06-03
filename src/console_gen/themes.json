@@ -1,0 +1,574 @@
+{
+  "terminal_themes": {
+    "auto": {
+      "background": "#111316",
+      "titlebar": "#24272c",
+      "title_text": "#d7dae0",
+      "text": "#e6e6e6",
+      "muted": "#8b949e",
+      "border": "#343942",
+      "shadow": "#000000"
+    },
+    "dark": {
+      "background": "#111316",
+      "titlebar": "#24272c",
+      "title_text": "#d7dae0",
+      "text": "#e6e6e6",
+      "muted": "#8b949e",
+      "border": "#343942",
+      "shadow": "#000000"
+    },
+    "light": {
+      "background": "#f7f7f7",
+      "titlebar": "#e6e8eb",
+      "title_text": "#2f3337",
+      "text": "#202327",
+      "muted": "#69707a",
+      "border": "#c9cdd3",
+      "shadow": "#808080"
+    },
+    "ubuntu": {
+      "background": "#300a24",
+      "titlebar": "#2c2c2c",
+      "title_text": "#eeeeec",
+      "text": "#eeeeec",
+      "muted": "#ad7fa8",
+      "border": "#4a223c",
+      "shadow": "#000000"
+    },
+    "powershell": {
+      "background": "#012456",
+      "titlebar": "#1f1f1f",
+      "title_text": "#f3f3f3",
+      "text": "#f3f3f3",
+      "muted": "#9cdcfe",
+      "border": "#153a70",
+      "shadow": "#000000"
+    },
+    "macos": {
+      "background": "#1e1e1e",
+      "titlebar": "#343434",
+      "title_text": "#ededed",
+      "text": "#f2f2f2",
+      "muted": "#9b9b9b",
+      "border": "#555555",
+      "shadow": "#000000"
+    },
+    "dracula": {
+      "background": "#282a36",
+      "titlebar": "#21222c",
+      "title_text": "#f8f8f2",
+      "text": "#f8f8f2",
+      "muted": "#6272a4",
+      "border": "#44475a",
+      "shadow": "#000000"
+    },
+    "gruvbox-dark": {
+      "background": "#282828",
+      "titlebar": "#1d2021",
+      "title_text": "#ebdbb2",
+      "text": "#ebdbb2",
+      "muted": "#928374",
+      "border": "#504945",
+      "shadow": "#000000"
+    },
+    "gruvbox-light": {
+      "background": "#fbf1c7",
+      "titlebar": "#ebdbb2",
+      "title_text": "#3c3836",
+      "text": "#3c3836",
+      "muted": "#7c6f64",
+      "border": "#d5c4a1",
+      "shadow": "#928374"
+    },
+    "nord": {
+      "background": "#2e3440",
+      "titlebar": "#3b4252",
+      "title_text": "#eceff4",
+      "text": "#d8dee9",
+      "muted": "#81a1c1",
+      "border": "#4c566a",
+      "shadow": "#000000"
+    },
+    "solarized-dark": {
+      "background": "#002b36",
+      "titlebar": "#073642",
+      "title_text": "#eee8d5",
+      "text": "#839496",
+      "muted": "#586e75",
+      "border": "#586e75",
+      "shadow": "#000000"
+    },
+    "solarized-light": {
+      "background": "#fdf6e3",
+      "titlebar": "#eee8d5",
+      "title_text": "#073642",
+      "text": "#657b83",
+      "muted": "#93a1a1",
+      "border": "#ddd6c1",
+      "shadow": "#93a1a1"
+    },
+    "monokai": {
+      "background": "#272822",
+      "titlebar": "#1e1f1c",
+      "title_text": "#f8f8f2",
+      "text": "#f8f8f2",
+      "muted": "#75715e",
+      "border": "#49483e",
+      "shadow": "#000000"
+    },
+    "one-dark": {
+      "background": "#282c34",
+      "titlebar": "#21252b",
+      "title_text": "#abb2bf",
+      "text": "#abb2bf",
+      "muted": "#5c6370",
+      "border": "#3b4048",
+      "shadow": "#000000"
+    },
+    "catppuccin-mocha": {
+      "background": "#1e1e2e",
+      "titlebar": "#181825",
+      "title_text": "#cdd6f4",
+      "text": "#cdd6f4",
+      "muted": "#9399b2",
+      "border": "#45475a",
+      "shadow": "#000000"
+    },
+    "catppuccin-latte": {
+      "background": "#eff1f5",
+      "titlebar": "#e6e9ef",
+      "title_text": "#4c4f69",
+      "text": "#4c4f69",
+      "muted": "#8c8fa1",
+      "border": "#ccd0da",
+      "shadow": "#9ca0b0"
+    },
+    "tokyo-night": {
+      "background": "#1a1b26",
+      "titlebar": "#16161e",
+      "title_text": "#c0caf5",
+      "text": "#c0caf5",
+      "muted": "#565f89",
+      "border": "#292e42",
+      "shadow": "#000000"
+    },
+    "rose-pine": {
+      "background": "#191724",
+      "titlebar": "#1f1d2e",
+      "title_text": "#e0def4",
+      "text": "#e0def4",
+      "muted": "#6e6a86",
+      "border": "#403d52",
+      "shadow": "#000000"
+    },
+    "github-dark": {
+      "background": "#0d1117",
+      "titlebar": "#161b22",
+      "title_text": "#f0f6fc",
+      "text": "#c9d1d9",
+      "muted": "#8b949e",
+      "border": "#30363d",
+      "shadow": "#000000"
+    },
+    "github-light": {
+      "background": "#ffffff",
+      "titlebar": "#f6f8fa",
+      "title_text": "#24292f",
+      "text": "#24292f",
+      "muted": "#57606a",
+      "border": "#d0d7de",
+      "shadow": "#8c959f"
+    }
+  },
+  "auto_themes": {
+    "frameless": "ubuntu",
+    "mac": "macos",
+    "ubuntu": "ubuntu",
+    "windows": "powershell"
+  },
+  "syntax_themes": {
+    "vscode-dark": {
+      "background": "#1e1e1e",
+      "text": "#d4d4d4",
+      "colors": [
+        {"token": "Comment", "color": "#6a9955"},
+        {"token": "Keyword", "color": "#569cd6"},
+        {"token": "Name.Function", "color": "#dcdcaa"},
+        {"token": "Name.Class", "color": "#4ec9b0"},
+        {"token": "Name.Builtin", "color": "#4ec9b0"},
+        {"token": "Name.Variable", "color": "#9cdcfe"},
+        {"token": "String", "color": "#ce9178"},
+        {"token": "Number", "color": "#b5cea8"},
+        {"token": "Literal", "color": "#b5cea8"},
+        {"token": "Operator", "color": "#d4d4d4"},
+        {"token": "Punctuation", "color": "#d4d4d4"},
+        {"token": "Generic.Heading", "color": "#569cd6", "bold": true},
+        {"token": "Generic.Subheading", "color": "#4ec9b0", "bold": true},
+        {"token": "Generic.Deleted", "color": "#f44747"},
+        {"token": "Generic.Inserted", "color": "#6a9955"},
+        {"token": "Error", "color": "#f44747"}
+      ]
+    },
+    "vscode-light": {
+      "background": "#ffffff",
+      "text": "#24292f",
+      "colors": [
+        {"token": "Comment", "color": "#008000"},
+        {"token": "Keyword", "color": "#0000ff"},
+        {"token": "Name.Function", "color": "#795e26"},
+        {"token": "Name.Class", "color": "#267f99"},
+        {"token": "Name.Builtin", "color": "#267f99"},
+        {"token": "Name.Variable", "color": "#001080"},
+        {"token": "String", "color": "#a31515"},
+        {"token": "Number", "color": "#098658"},
+        {"token": "Literal", "color": "#098658"},
+        {"token": "Operator", "color": "#000000"},
+        {"token": "Punctuation", "color": "#000000"},
+        {"token": "Generic.Heading", "color": "#0000ff", "bold": true},
+        {"token": "Generic.Subheading", "color": "#267f99", "bold": true},
+        {"token": "Generic.Deleted", "color": "#a31515"},
+        {"token": "Generic.Inserted", "color": "#008000"},
+        {"token": "Error", "color": "#a31515"}
+      ]
+    },
+    "intellij-light": {
+      "background": "#ffffff",
+      "text": "#080808",
+      "colors": [
+        {"token": "Comment", "color": "#808080"},
+        {"token": "Keyword", "color": "#000080", "bold": true},
+        {"token": "Name.Function", "color": "#00627a"},
+        {"token": "Name.Class", "color": "#20999d"},
+        {"token": "Name.Builtin", "color": "#000080"},
+        {"token": "Name.Variable", "color": "#660e7a"},
+        {"token": "String", "color": "#067d17"},
+        {"token": "Number", "color": "#1750eb"},
+        {"token": "Literal", "color": "#1750eb"},
+        {"token": "Operator", "color": "#000000"},
+        {"token": "Punctuation", "color": "#000000"},
+        {"token": "Generic.Heading", "color": "#000080", "bold": true},
+        {"token": "Generic.Subheading", "color": "#20999d", "bold": true},
+        {"token": "Generic.Deleted", "color": "#a31515"},
+        {"token": "Generic.Inserted", "color": "#067d17"},
+        {"token": "Error", "color": "#ff0000"}
+      ]
+    },
+    "intellij-dark": {
+      "background": "#2b2b2b",
+      "text": "#a9b7c6",
+      "colors": [
+        {"token": "Comment", "color": "#808080"},
+        {"token": "Keyword", "color": "#cc7832"},
+        {"token": "Name.Function", "color": "#ffc66d"},
+        {"token": "Name.Class", "color": "#a9b7c6"},
+        {"token": "Name.Builtin", "color": "#8888c6"},
+        {"token": "Name.Variable", "color": "#9876aa"},
+        {"token": "String", "color": "#6a8759"},
+        {"token": "Number", "color": "#6897bb"},
+        {"token": "Literal", "color": "#6897bb"},
+        {"token": "Operator", "color": "#a9b7c6"},
+        {"token": "Punctuation", "color": "#a9b7c6"},
+        {"token": "Generic.Heading", "color": "#cc7832", "bold": true},
+        {"token": "Generic.Subheading", "color": "#ffc66d", "bold": true},
+        {"token": "Generic.Deleted", "color": "#bc3f3c"},
+        {"token": "Generic.Inserted", "color": "#6a8759"},
+        {"token": "Error", "color": "#ff5555"}
+      ]
+    },
+    "dracula": {
+      "background": "#282a36",
+      "text": "#f8f8f2",
+      "colors": [
+        {"token": "Comment", "color": "#6272a4"},
+        {"token": "Keyword", "color": "#ff79c6"},
+        {"token": "Name.Function", "color": "#50fa7b"},
+        {"token": "Name.Class", "color": "#8be9fd"},
+        {"token": "Name.Builtin", "color": "#8be9fd"},
+        {"token": "Name.Variable", "color": "#f8f8f2"},
+        {"token": "String", "color": "#f1fa8c"},
+        {"token": "Number", "color": "#bd93f9"},
+        {"token": "Literal", "color": "#bd93f9"},
+        {"token": "Operator", "color": "#ff79c6"},
+        {"token": "Punctuation", "color": "#f8f8f2"},
+        {"token": "Generic.Heading", "color": "#8be9fd", "bold": true},
+        {"token": "Generic.Deleted", "color": "#ff5555"},
+        {"token": "Generic.Inserted", "color": "#50fa7b"},
+        {"token": "Error", "color": "#ff5555"}
+      ]
+    },
+    "gruvbox-dark": {
+      "background": "#282828",
+      "text": "#ebdbb2",
+      "colors": [
+        {"token": "Comment", "color": "#928374"},
+        {"token": "Keyword", "color": "#fb4934"},
+        {"token": "Name.Function", "color": "#b8bb26"},
+        {"token": "Name.Class", "color": "#fabd2f"},
+        {"token": "Name.Builtin", "color": "#fe8019"},
+        {"token": "Name.Variable", "color": "#ebdbb2"},
+        {"token": "String", "color": "#b8bb26"},
+        {"token": "Number", "color": "#d3869b"},
+        {"token": "Literal", "color": "#d3869b"},
+        {"token": "Operator", "color": "#fe8019"},
+        {"token": "Punctuation", "color": "#ebdbb2"},
+        {"token": "Generic.Heading", "color": "#fabd2f", "bold": true},
+        {"token": "Generic.Deleted", "color": "#fb4934"},
+        {"token": "Generic.Inserted", "color": "#b8bb26"},
+        {"token": "Error", "color": "#fb4934"}
+      ]
+    },
+    "gruvbox-light": {
+      "background": "#fbf1c7",
+      "text": "#3c3836",
+      "colors": [
+        {"token": "Comment", "color": "#928374"},
+        {"token": "Keyword", "color": "#9d0006"},
+        {"token": "Name.Function", "color": "#79740e"},
+        {"token": "Name.Class", "color": "#b57614"},
+        {"token": "Name.Builtin", "color": "#af3a03"},
+        {"token": "Name.Variable", "color": "#3c3836"},
+        {"token": "String", "color": "#79740e"},
+        {"token": "Number", "color": "#8f3f71"},
+        {"token": "Literal", "color": "#8f3f71"},
+        {"token": "Operator", "color": "#af3a03"},
+        {"token": "Punctuation", "color": "#3c3836"},
+        {"token": "Generic.Heading", "color": "#b57614", "bold": true},
+        {"token": "Generic.Deleted", "color": "#9d0006"},
+        {"token": "Generic.Inserted", "color": "#79740e"},
+        {"token": "Error", "color": "#9d0006"}
+      ]
+    },
+    "nord": {
+      "background": "#2e3440",
+      "text": "#d8dee9",
+      "colors": [
+        {"token": "Comment", "color": "#616e88"},
+        {"token": "Keyword", "color": "#81a1c1"},
+        {"token": "Name.Function", "color": "#88c0d0"},
+        {"token": "Name.Class", "color": "#8fbcbb"},
+        {"token": "Name.Builtin", "color": "#81a1c1"},
+        {"token": "Name.Variable", "color": "#d8dee9"},
+        {"token": "String", "color": "#a3be8c"},
+        {"token": "Number", "color": "#b48ead"},
+        {"token": "Literal", "color": "#b48ead"},
+        {"token": "Operator", "color": "#81a1c1"},
+        {"token": "Punctuation", "color": "#d8dee9"},
+        {"token": "Generic.Heading", "color": "#88c0d0", "bold": true},
+        {"token": "Generic.Deleted", "color": "#bf616a"},
+        {"token": "Generic.Inserted", "color": "#a3be8c"},
+        {"token": "Error", "color": "#bf616a"}
+      ]
+    },
+    "solarized-dark": {
+      "background": "#002b36",
+      "text": "#839496",
+      "colors": [
+        {"token": "Comment", "color": "#586e75"},
+        {"token": "Keyword", "color": "#859900"},
+        {"token": "Name.Function", "color": "#268bd2"},
+        {"token": "Name.Class", "color": "#b58900"},
+        {"token": "Name.Builtin", "color": "#2aa198"},
+        {"token": "Name.Variable", "color": "#839496"},
+        {"token": "String", "color": "#2aa198"},
+        {"token": "Number", "color": "#d33682"},
+        {"token": "Literal", "color": "#d33682"},
+        {"token": "Operator", "color": "#859900"},
+        {"token": "Punctuation", "color": "#839496"},
+        {"token": "Generic.Heading", "color": "#268bd2", "bold": true},
+        {"token": "Generic.Deleted", "color": "#dc322f"},
+        {"token": "Generic.Inserted", "color": "#859900"},
+        {"token": "Error", "color": "#dc322f"}
+      ]
+    },
+    "solarized-light": {
+      "background": "#fdf6e3",
+      "text": "#657b83",
+      "colors": [
+        {"token": "Comment", "color": "#93a1a1"},
+        {"token": "Keyword", "color": "#859900"},
+        {"token": "Name.Function", "color": "#268bd2"},
+        {"token": "Name.Class", "color": "#b58900"},
+        {"token": "Name.Builtin", "color": "#2aa198"},
+        {"token": "Name.Variable", "color": "#657b83"},
+        {"token": "String", "color": "#2aa198"},
+        {"token": "Number", "color": "#d33682"},
+        {"token": "Literal", "color": "#d33682"},
+        {"token": "Operator", "color": "#859900"},
+        {"token": "Punctuation", "color": "#657b83"},
+        {"token": "Generic.Heading", "color": "#268bd2", "bold": true},
+        {"token": "Generic.Deleted", "color": "#dc322f"},
+        {"token": "Generic.Inserted", "color": "#859900"},
+        {"token": "Error", "color": "#dc322f"}
+      ]
+    },
+    "monokai": {
+      "background": "#272822",
+      "text": "#f8f8f2",
+      "colors": [
+        {"token": "Comment", "color": "#75715e"},
+        {"token": "Keyword", "color": "#f92672"},
+        {"token": "Name.Function", "color": "#a6e22e"},
+        {"token": "Name.Class", "color": "#a6e22e"},
+        {"token": "Name.Builtin", "color": "#66d9ef"},
+        {"token": "Name.Variable", "color": "#f8f8f2"},
+        {"token": "String", "color": "#e6db74"},
+        {"token": "Number", "color": "#ae81ff"},
+        {"token": "Literal", "color": "#ae81ff"},
+        {"token": "Operator", "color": "#f92672"},
+        {"token": "Punctuation", "color": "#f8f8f2"},
+        {"token": "Generic.Heading", "color": "#66d9ef", "bold": true},
+        {"token": "Generic.Deleted", "color": "#f92672"},
+        {"token": "Generic.Inserted", "color": "#a6e22e"},
+        {"token": "Error", "color": "#f92672"}
+      ]
+    },
+    "one-dark": {
+      "background": "#282c34",
+      "text": "#abb2bf",
+      "colors": [
+        {"token": "Comment", "color": "#5c6370"},
+        {"token": "Keyword", "color": "#c678dd"},
+        {"token": "Name.Function", "color": "#61afef"},
+        {"token": "Name.Class", "color": "#e5c07b"},
+        {"token": "Name.Builtin", "color": "#56b6c2"},
+        {"token": "Name.Variable", "color": "#e06c75"},
+        {"token": "String", "color": "#98c379"},
+        {"token": "Number", "color": "#d19a66"},
+        {"token": "Literal", "color": "#d19a66"},
+        {"token": "Operator", "color": "#56b6c2"},
+        {"token": "Punctuation", "color": "#abb2bf"},
+        {"token": "Generic.Heading", "color": "#61afef", "bold": true},
+        {"token": "Generic.Deleted", "color": "#e06c75"},
+        {"token": "Generic.Inserted", "color": "#98c379"},
+        {"token": "Error", "color": "#e06c75"}
+      ]
+    },
+    "catppuccin-mocha": {
+      "background": "#1e1e2e",
+      "text": "#cdd6f4",
+      "colors": [
+        {"token": "Comment", "color": "#6c7086"},
+        {"token": "Keyword", "color": "#cba6f7"},
+        {"token": "Name.Function", "color": "#89b4fa"},
+        {"token": "Name.Class", "color": "#f9e2af"},
+        {"token": "Name.Builtin", "color": "#89dceb"},
+        {"token": "Name.Variable", "color": "#f38ba8"},
+        {"token": "String", "color": "#a6e3a1"},
+        {"token": "Number", "color": "#fab387"},
+        {"token": "Literal", "color": "#fab387"},
+        {"token": "Operator", "color": "#89dceb"},
+        {"token": "Punctuation", "color": "#cdd6f4"},
+        {"token": "Generic.Heading", "color": "#89b4fa", "bold": true},
+        {"token": "Generic.Deleted", "color": "#f38ba8"},
+        {"token": "Generic.Inserted", "color": "#a6e3a1"},
+        {"token": "Error", "color": "#f38ba8"}
+      ]
+    },
+    "catppuccin-latte": {
+      "background": "#eff1f5",
+      "text": "#4c4f69",
+      "colors": [
+        {"token": "Comment", "color": "#8c8fa1"},
+        {"token": "Keyword", "color": "#8839ef"},
+        {"token": "Name.Function", "color": "#1e66f5"},
+        {"token": "Name.Class", "color": "#df8e1d"},
+        {"token": "Name.Builtin", "color": "#179299"},
+        {"token": "Name.Variable", "color": "#d20f39"},
+        {"token": "String", "color": "#40a02b"},
+        {"token": "Number", "color": "#fe640b"},
+        {"token": "Literal", "color": "#fe640b"},
+        {"token": "Operator", "color": "#179299"},
+        {"token": "Punctuation", "color": "#4c4f69"},
+        {"token": "Generic.Heading", "color": "#1e66f5", "bold": true},
+        {"token": "Generic.Deleted", "color": "#d20f39"},
+        {"token": "Generic.Inserted", "color": "#40a02b"},
+        {"token": "Error", "color": "#d20f39"}
+      ]
+    },
+    "tokyo-night": {
+      "background": "#1a1b26",
+      "text": "#c0caf5",
+      "colors": [
+        {"token": "Comment", "color": "#565f89"},
+        {"token": "Keyword", "color": "#bb9af7"},
+        {"token": "Name.Function", "color": "#7aa2f7"},
+        {"token": "Name.Class", "color": "#e0af68"},
+        {"token": "Name.Builtin", "color": "#7dcfff"},
+        {"token": "Name.Variable", "color": "#c0caf5"},
+        {"token": "String", "color": "#9ece6a"},
+        {"token": "Number", "color": "#ff9e64"},
+        {"token": "Literal", "color": "#ff9e64"},
+        {"token": "Operator", "color": "#89ddff"},
+        {"token": "Punctuation", "color": "#c0caf5"},
+        {"token": "Generic.Heading", "color": "#7aa2f7", "bold": true},
+        {"token": "Generic.Deleted", "color": "#f7768e"},
+        {"token": "Generic.Inserted", "color": "#9ece6a"},
+        {"token": "Error", "color": "#f7768e"}
+      ]
+    },
+    "rose-pine": {
+      "background": "#191724",
+      "text": "#e0def4",
+      "colors": [
+        {"token": "Comment", "color": "#6e6a86"},
+        {"token": "Keyword", "color": "#eb6f92"},
+        {"token": "Name.Function", "color": "#9ccfd8"},
+        {"token": "Name.Class", "color": "#f6c177"},
+        {"token": "Name.Builtin", "color": "#c4a7e7"},
+        {"token": "Name.Variable", "color": "#e0def4"},
+        {"token": "String", "color": "#f6c177"},
+        {"token": "Number", "color": "#ebbcba"},
+        {"token": "Literal", "color": "#ebbcba"},
+        {"token": "Operator", "color": "#eb6f92"},
+        {"token": "Punctuation", "color": "#e0def4"},
+        {"token": "Generic.Heading", "color": "#9ccfd8", "bold": true},
+        {"token": "Generic.Deleted", "color": "#eb6f92"},
+        {"token": "Generic.Inserted", "color": "#31748f"},
+        {"token": "Error", "color": "#eb6f92"}
+      ]
+    },
+    "github-dark": {
+      "background": "#0d1117",
+      "text": "#c9d1d9",
+      "colors": [
+        {"token": "Comment", "color": "#8b949e"},
+        {"token": "Keyword", "color": "#ff7b72"},
+        {"token": "Name.Function", "color": "#d2a8ff"},
+        {"token": "Name.Class", "color": "#ffa657"},
+        {"token": "Name.Builtin", "color": "#79c0ff"},
+        {"token": "Name.Variable", "color": "#ffa657"},
+        {"token": "String", "color": "#a5d6ff"},
+        {"token": "Number", "color": "#79c0ff"},
+        {"token": "Literal", "color": "#79c0ff"},
+        {"token": "Operator", "color": "#ff7b72"},
+        {"token": "Punctuation", "color": "#c9d1d9"},
+        {"token": "Generic.Heading", "color": "#1f6feb", "bold": true},
+        {"token": "Generic.Deleted", "color": "#ffdcd7"},
+        {"token": "Generic.Inserted", "color": "#aff5b4"},
+        {"token": "Error", "color": "#ff7b72"}
+      ]
+    },
+    "github-light": {
+      "background": "#ffffff",
+      "text": "#24292f",
+      "colors": [
+        {"token": "Comment", "color": "#6e7781"},
+        {"token": "Keyword", "color": "#cf222e"},
+        {"token": "Name.Function", "color": "#8250df"},
+        {"token": "Name.Class", "color": "#953800"},
+        {"token": "Name.Builtin", "color": "#0550ae"},
+        {"token": "Name.Variable", "color": "#953800"},
+        {"token": "String", "color": "#0a3069"},
+        {"token": "Number", "color": "#0550ae"},
+        {"token": "Literal", "color": "#0550ae"},
+        {"token": "Operator", "color": "#cf222e"},
+        {"token": "Punctuation", "color": "#24292f"},
+        {"token": "Generic.Heading", "color": "#0969da", "bold": true},
+        {"token": "Generic.Deleted", "color": "#82071e"},
+        {"token": "Generic.Inserted", "color": "#116329"},
+        {"token": "Error", "color": "#cf222e"}
+      ]
+    }
+  }
+}

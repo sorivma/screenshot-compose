@@ -1,0 +1,18 @@
+---
+- name: Configure demo host
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Install packages
+      ansible.builtin.apt:
+        name:
+          - python3
+          - git
+        state: present
+        update_cache: true
+
+    - name: Write marker file
+      ansible.builtin.copy:
+        dest: /etc/console-gen-demo
+        content: "configured\n"

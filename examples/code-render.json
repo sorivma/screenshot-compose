@@ -1,0 +1,12 @@
+{
+  "content_type": "code",
+  "syntax_theme": "vscode-dark",
+  "frame": "mac",
+  "title": "Source Preview",
+  "width_chars": 88,
+  "font_size": 15,
+  "line_spacing": 6,
+  "padding_x": 24,
+  "padding_y": 20,
+  "radius": 12
+}
