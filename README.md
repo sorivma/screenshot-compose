@@ -17,6 +17,7 @@
 - Square corners by default, with optional rounded corners.
 - Built-in themes are stored as JSON resources and can be extended or overridden with custom JSON theme files.
 - JSON render configs for reusable frame, typography, spacing, and syntax settings.
+- Compose-style YAML project files for rendering multiple named resources with shared defaults.
 - Long lines expand the image width by default. Optional wrapping can be enabled with `--wrap-lines`.
 
 ## Examples
@@ -211,6 +212,45 @@ Config keys map to `RenderOptions` fields. Short aliases `width` and `theme` are
   "indent_size": 4
 }
 ```
+
+For larger sets of screenshots, use a YAML project file:
+
+```powershell
+console-gen apply -f examples/console-gen.yml
+console-gen apply -f examples/console-gen.yml python ansible
+```
+
+Project files describe named render resources with shared defaults:
+
+```yaml
+version: 1
+
+defaults:
+  render:
+    width: 88
+    font_size: 15
+    frame: mac
+    content_type: code
+    syntax_theme: vscode-dark
+    line_numbers: true
+    line_number_style: vscode
+
+renders:
+  python:
+    input: inputs/example.py
+    output: ../build/project-python.png
+    language: python
+
+  terminal:
+    input: inputs/sample.log
+    output: ../build/project-terminal.png
+    content_type: log
+    frame: windows
+    theme: powershell
+    line_numbers: false
+```
+
+Paths in project files are resolved relative to the project file location. Resource-level values override `defaults.render`.
 
 Available line number styles:
 

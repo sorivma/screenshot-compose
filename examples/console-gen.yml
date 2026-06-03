@@ -1,0 +1,36 @@
+version: 1
+
+defaults:
+  render:
+    width: 88
+    font_size: 15
+    frame: mac
+    title: Source Preview
+    content_type: code
+    syntax_theme: vscode-dark
+    line_numbers: true
+    line_number_style: vscode
+    indent_guides: true
+
+renders:
+  python:
+    input: inputs/example.py
+    output: ../build/project-python.png
+    language: python
+
+  ansible:
+    input: inputs/ansible-playbook.yml
+    output: ../build/project-ansible.png
+    language: yaml
+    syntax_theme: vscode-light
+    frame: ubuntu
+
+  terminal:
+    input: inputs/sample.log
+    output: ../build/project-terminal.png
+    content_type: log
+    frame: windows
+    title: Build Output
+    theme: powershell
+    line_numbers: false
+    indent_guides: false

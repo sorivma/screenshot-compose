@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import argparse
-import json
-from dataclasses import fields
 from pathlib import Path
 
+from .project import load_options_config, render_project
 from .renderer import RenderOptions, render_log_file
 from .themes import list_syntax_theme_names, list_terminal_theme_names
 
@@ -30,8 +29,15 @@ def themes_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def apply_command(args: argparse.Namespace) -> int:
+    outputs = render_project(args.file, args.names)
+    for output in outputs:
+        print(f"Rendered {output}")
+    return 0
+
+
 def _build_options(args: argparse.Namespace) -> RenderOptions:
-    values = _load_config(args.config)
+    values = load_options_config(args.config)
     cli_values = {
         "width_chars": args.width,
         "wrap_lines": args.wrap_lines,
@@ -61,34 +67,6 @@ def _build_options(args: argparse.Namespace) -> RenderOptions:
     return RenderOptions(**values)
 
 
-def _load_config(config_path: str | None) -> dict[str, object]:
-    if not config_path:
-        return {}
-
-    path = Path(config_path)
-    with path.open("r", encoding="utf-8-sig") as handle:
-        raw = json.load(handle)
-    if not isinstance(raw, dict):
-        raise ValueError("Config file must contain a JSON object")
-
-    aliases = {
-        "width": "width_chars",
-        "theme": "theme_name",
-    }
-    valid_fields = {field.name for field in fields(RenderOptions)}
-    values: dict[str, object] = {}
-    for key, value in raw.items():
-        normalized_key = aliases.get(key, key)
-        if normalized_key not in valid_fields:
-            raise ValueError(f"Unknown config option: {key}")
-        if normalized_key == "theme_file" and isinstance(value, str):
-            theme_path = Path(value)
-            if not theme_path.is_absolute():
-                value = str(path.parent / theme_path)
-        values[normalized_key] = value
-    return values
-
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="console-gen",
@@ -99,7 +77,7 @@ def build_parser() -> argparse.ArgumentParser:
     render_parser = subparsers.add_parser("render", help="Render a log file to PNG")
     render_parser.add_argument("-i", "--input", required=True, help="Input console log")
     render_parser.add_argument("-o", "--output", required=True, help="Output PNG path")
-    render_parser.add_argument("--config", help="JSON render config. CLI options override config values.")
+    render_parser.add_argument("--config", help="JSON or YAML render config. CLI options override config values.")
     render_parser.add_argument("--theme-file", help="JSON file with custom terminal and syntax themes")
     render_parser.add_argument("--title", help="Terminal window title")
     render_parser.add_argument("--width", type=int, help="Terminal width in characters")
@@ -183,6 +161,11 @@ def build_parser() -> argparse.ArgumentParser:
     themes_parser = subparsers.add_parser("themes", help="List built-in and custom themes")
     themes_parser.add_argument("--theme-file", help="JSON file with custom terminal and syntax themes")
     themes_parser.set_defaults(func=themes_command)
+
+    apply_parser = subparsers.add_parser("apply", help="Render resources from a YAML project file")
+    apply_parser.add_argument("-f", "--file", default="console-gen.yml", help="Project file path")
+    apply_parser.add_argument("names", nargs="*", help="Optional render resource names to render")
+    apply_parser.set_defaults(func=apply_command)
 
     return parser
 
