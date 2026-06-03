@@ -33,6 +33,15 @@ def test_frameless_render_has_no_titlebar_height():
     assert frameless.size[1] < framed.size[1]
 
 
+def test_windows_close_button_is_clipped_to_window_radius():
+    image = render_log("$ echo hello\nhello", RenderOptions(width_chars=40, font_size=14, frame="windows"))
+    margin = 24
+    right = image.size[0] - margin
+
+    assert image.getpixel((right - 10, margin + 1))[:3] == (196, 43, 28)
+    assert image.getpixel((right - 1, margin))[3] < 128
+
+
 def test_plain_text_uses_theme_color_without_auto_coloring():
     spans = _parse_line("sorivma@ubuntu:~/lab$ pytest", "#eeeeec")
 

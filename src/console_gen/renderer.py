@@ -6,7 +6,7 @@ import textwrap
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 from pygments import lex
 from pygments.lexers import TextLexer, get_lexer_by_name, guess_lexer, guess_lexer_for_filename
 from pygments.token import Text, Token
@@ -92,7 +92,7 @@ def render_text(text: str, options: RenderOptions | None = None, filename: str |
         _draw_shadow(image, window_box, options.radius)
     _draw_window(draw, window_box, options, theme)
     if options.frame != "frameless":
-        _draw_titlebar(draw, window_box, options, theme, regular_font)
+        _draw_titlebar(image, draw, window_box, options, theme, regular_font)
 
     text_x = margin + options.padding_x
     text_y = margin + titlebar_height + options.padding_y
@@ -302,6 +302,7 @@ def _draw_window(
 
 
 def _draw_titlebar(
+    image: Image.Image,
     draw: ImageDraw.ImageDraw,
     box: tuple[int, int, int, int],
     options: RenderOptions,
@@ -310,16 +311,19 @@ def _draw_titlebar(
 ) -> None:
     x1, y1, x2, _ = box
     title_box = (x1, y1, x2, y1 + options.titlebar_height)
-    draw.rounded_rectangle(title_box, radius=options.radius, fill=theme.titlebar)
-    draw.rectangle((x1, y1 + options.radius, x2, y1 + options.titlebar_height), fill=theme.titlebar)
+    titlebar_layer = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    titlebar_draw = ImageDraw.Draw(titlebar_layer)
+    titlebar_draw.rectangle(title_box, fill=theme.titlebar)
+    _clip_layer_to_window(titlebar_layer, box, options.radius)
+    image.alpha_composite(titlebar_layer)
     draw.line((x1, y1 + options.titlebar_height, x2, y1 + options.titlebar_height), fill=theme.border)
 
     if options.frame == "mac":
-        _draw_mac_controls(draw, x1, y1, options)
+        _draw_mac_controls(image, x1, y1, options)
     elif options.frame == "ubuntu":
-        _draw_ubuntu_controls(draw, x1, y1, options)
+        _draw_ubuntu_controls(image, draw, x1, y1, options)
     else:
-        _draw_windows_controls(draw, x2, y1, options, theme)
+        _draw_windows_controls(image, draw, box, options, theme)
 
     title = textwrap.shorten(options.title, width=72, placeholder="...")
     bbox = draw.textbbox((0, 0), title, font=font)
@@ -330,7 +334,7 @@ def _draw_titlebar(
 
 
 def _draw_mac_controls(
-    draw: ImageDraw.ImageDraw,
+    image: Image.Image,
     x1: int,
     y1: int,
     options: RenderOptions,
@@ -338,10 +342,11 @@ def _draw_mac_controls(
     button_y = y1 + options.titlebar_height // 2
     for index, color in enumerate(("#ff5f56", "#ffbd2e", "#27c93f")):
         cx = x1 + 19 + index * 18
-        draw.ellipse((cx - 5, button_y - 5, cx + 5, button_y + 5), fill=color)
+        _draw_antialiased_ellipse(image, (cx - 5, button_y - 5, cx + 5, button_y + 5), color)
 
 
 def _draw_ubuntu_controls(
+    image: Image.Image,
     draw: ImageDraw.ImageDraw,
     x1: int,
     y1: int,
@@ -352,7 +357,7 @@ def _draw_ubuntu_controls(
     symbols = ("x", "-", "+")
     for index, color in enumerate(colors):
         cx = x1 + 20 + index * 20
-        draw.ellipse((cx - 6, button_y - 6, cx + 6, button_y + 6), fill=color)
+        _draw_antialiased_ellipse(image, (cx - 6, button_y - 6, cx + 6, button_y + 6), color)
         if symbols[index] == "x":
             draw.line((cx - 3, button_y - 3, cx + 3, button_y + 3), fill="#ffffff", width=1)
             draw.line((cx + 3, button_y - 3, cx - 3, button_y + 3), fill="#ffffff", width=1)
@@ -364,12 +369,13 @@ def _draw_ubuntu_controls(
 
 
 def _draw_windows_controls(
+    image: Image.Image,
     draw: ImageDraw.ImageDraw,
-    x2: int,
-    y1: int,
+    box: tuple[int, int, int, int],
     options: RenderOptions,
     theme: TerminalTheme,
 ) -> None:
+    _, y1, x2, _ = box
     control_w = 46
     top = y1
     bottom = y1 + options.titlebar_height
@@ -378,11 +384,43 @@ def _draw_windows_controls(
     min_left = max_left - control_w
     cy = y1 + options.titlebar_height // 2
 
-    draw.rectangle((close_left, top + 1, x2 - 1, bottom - 1), fill="#c42b1c")
+    close_layer = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    close_draw = ImageDraw.Draw(close_layer)
+    close_draw.rectangle((close_left, top, x2, bottom), fill="#c42b1c")
+    _clip_layer_to_window(close_layer, box, options.radius)
+    image.alpha_composite(close_layer)
     draw.line((min_left + 17, cy + 5, min_left + 29, cy + 5), fill=theme.title_text, width=1)
     draw.rectangle((max_left + 18, cy - 5, max_left + 29, cy + 6), outline=theme.title_text, width=1)
     draw.line((close_left + 18, cy - 5, close_left + 29, cy + 6), fill="#ffffff", width=1)
     draw.line((close_left + 29, cy - 5, close_left + 18, cy + 6), fill="#ffffff", width=1)
+
+
+def _window_clip_mask(size: tuple[int, int], box: tuple[int, int, int, int], radius: int) -> Image.Image:
+    scale = 4
+    mask = Image.new("L", (size[0] * scale, size[1] * scale), 0)
+    mask_draw = ImageDraw.Draw(mask)
+    scaled_box = tuple(value * scale for value in box)
+    mask_draw.rounded_rectangle(scaled_box, radius=radius * scale, fill=255)
+    return mask.resize(size, Image.Resampling.LANCZOS)
+
+
+def _clip_layer_to_window(layer: Image.Image, box: tuple[int, int, int, int], radius: int) -> None:
+    clip_mask = _window_clip_mask(layer.size, box, radius)
+    alpha = layer.getchannel("A")
+    layer.putalpha(ImageChops.multiply(alpha, clip_mask))
+
+
+def _draw_antialiased_ellipse(image: Image.Image, box: tuple[int, int, int, int], fill: str) -> None:
+    scale = 4
+    target_width = box[2] - box[0] + 1
+    target_height = box[3] - box[1] + 1
+    width = max(target_width * scale, 1)
+    height = max(target_height * scale, 1)
+    layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    layer_draw = ImageDraw.Draw(layer)
+    layer_draw.ellipse((0, 0, width - 1, height - 1), fill=fill)
+    layer = layer.resize((target_width, target_height), Image.Resampling.LANCZOS)
+    image.alpha_composite(layer, (box[0], box[1]))
 
 
 def _draw_text_lines(
