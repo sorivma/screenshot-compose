@@ -11,9 +11,13 @@
 - Logs without ANSI escape codes are rendered with the selected theme text color.
 - Source code rendering with syntax highlighting for any language supported by Pygments.
 - Syntax presets inspired by VS Code and IntelliJ IDEA.
+- Optional editor-style line numbers with configurable start number and VS Code or IntelliJ IDEA gutter styling.
+- VS Code-style vertical indentation guides for source code previews.
+- Tight output mode with configurable outer margin and content padding.
+- Square corners by default, with optional rounded corners.
 - Built-in themes are stored as JSON resources and can be extended or overridden with custom JSON theme files.
 - JSON render configs for reusable frame, typography, spacing, and syntax settings.
-- Long logs are rendered as tall screenshots with automatic line wrapping.
+- Long lines expand the image width by default. Optional wrapping can be enabled with `--wrap-lines`.
 
 ## Examples
 
@@ -33,6 +37,46 @@ Code examples:
 | --- | --- | --- |
 | ![Python code screenshot](examples/frames/sample-python-code.png) | ![Vagrantfile screenshot](examples/frames/sample-vagrantfile.png) | ![Ansible playbook screenshot](examples/frames/sample-ansible-playbook.png) |
 
+Line number styles:
+
+| VS Code | IntelliJ IDEA |
+| --- | --- |
+| ![VS Code line numbers](examples/syntax/syntax-vscode-line-numbers.png) | ![IntelliJ IDEA line numbers](examples/syntax/syntax-idea-line-numbers.png) |
+
+Tight output with `--margin 0 --padding-x 0 --padding-y 0`:
+
+| Frameless | VS Code Lines | IntelliJ IDEA Lines |
+| --- | --- | --- |
+| ![Tight frameless terminal block](examples/frames/sample-frameless-tight.png) | ![Tight VS Code line numbers](examples/syntax/syntax-vscode-line-numbers-tight.png) | ![Tight IntelliJ IDEA line numbers](examples/syntax/syntax-idea-line-numbers-tight.png) |
+
+Language examples:
+
+| TypeScript / VS Code | Go / IntelliJ IDEA |
+| --- | --- |
+| ![TypeScript rendered with VS Code styling](examples/languages/language-typescript-vscode.png) | ![Go rendered with IntelliJ IDEA styling](examples/languages/language-go-idea.png) |
+
+| SQL / GitHub Light | TOML / Catppuccin Mocha |
+| --- | --- |
+| ![SQL rendered with GitHub Light](examples/languages/language-sql-github-light.png) | ![TOML rendered with Catppuccin Mocha](examples/languages/language-toml-catppuccin.png) |
+
+Framework examples:
+
+| React / VS Code | Vue / VS Code Light |
+| --- | --- |
+| ![React rendered with VS Code styling](examples/frameworks/framework-react-vscode.png) | ![Vue rendered with VS Code Light styling](examples/frameworks/framework-vue-vscode-light.png) |
+
+| Complex React / VS Code |
+| --- |
+| ![Complex React rendered with VS Code styling](examples/frameworks/framework-react-complex-vscode.png) |
+
+| FastAPI / IntelliJ IDEA | Django / IntelliJ IDEA Light |
+| --- | --- |
+| ![FastAPI rendered with IntelliJ IDEA styling](examples/frameworks/framework-fastapi-idea.png) | ![Django rendered with IntelliJ IDEA Light styling](examples/frameworks/framework-django-idea-light.png) |
+
+| Spring Boot / IntelliJ IDEA Light |
+| --- |
+| ![Spring Boot rendered with IntelliJ IDEA Light styling](examples/frameworks/framework-spring-idea-light.png) |
+
 Long output:
 
 ![Long Ubuntu console output](examples/frames/sample-long-ubuntu.png)
@@ -43,7 +87,28 @@ Code input examples:
 examples/inputs/example.py
 examples/inputs/Vagrantfile
 examples/inputs/ansible-playbook.yml
+examples/inputs/app.ts
+examples/inputs/server.go
+examples/inputs/query.sql
+examples/inputs/settings.toml
+examples/inputs/react-dashboard.tsx
+examples/inputs/complex-dashboard.tsx
+examples/inputs/vue-profile.vue
+examples/inputs/fastapi_app.py
+examples/inputs/django_models.py
+examples/inputs/SpringApplication.java
 examples/inputs/code-render.json
+```
+
+Example directories:
+
+```text
+examples/frames      Terminal frames and tight terminal blocks
+examples/syntax      Syntax theme gallery and editor line-number styles
+examples/languages   Multi-language code previews
+examples/frameworks  Framework-oriented React, Vue, FastAPI, Django, and Spring previews
+examples/themes      Terminal theme gallery
+examples/inputs      Source files and logs used to generate the examples
 ```
 
 ## Installation
@@ -80,6 +145,9 @@ console-gen render -i lab.log -o build/macos.png --frame mac
 console-gen render -i lab.log -o build/ubuntu.png --frame ubuntu
 console-gen render -i lab.log -o build/block.png --frame frameless
 console-gen render -i lab.log -o build/large.png --width 110 --font-size 16
+console-gen render -i lab.log -o build/wrapped.png --width 110 --wrap-lines
+console-gen render -i lab.log -o build/tight.png --frame frameless --margin 0 --padding-x 0 --padding-y 0
+console-gen render -i lab.log -o build/rounded.png --rounded-corners --radius 12
 ```
 
 Render syntax-highlighted code:
@@ -88,6 +156,17 @@ Render syntax-highlighted code:
 console-gen render -i examples/inputs/example.py -o build/python-code.png --content-type code --language python --syntax-theme vscode-dark
 console-gen render -i examples/inputs/Vagrantfile -o build/vagrantfile.png --content-type code --language ruby --syntax-theme intellij-dark
 console-gen render -i examples/inputs/ansible-playbook.yml -o build/ansible.png --content-type code --language yaml --syntax-theme vscode-light
+console-gen render -i examples/inputs/example.py -o build/python-lines.png --content-type code --line-numbers --line-number-style vscode --line-number-start 100
+console-gen render -i examples/inputs/example.py -o build/python-idea-lines.png --content-type code --syntax-theme intellij-dark --line-numbers --line-number-style idea
+console-gen render -i examples/inputs/example.py -o build/python-no-guides.png --content-type code --line-numbers --line-number-style vscode --no-indent-guides
+```
+
+Render framework examples:
+
+```powershell
+console-gen render -i examples/inputs/react-dashboard.tsx -o build/react.png --content-type code --language tsx --syntax-theme vscode-dark --line-numbers --line-number-style vscode
+console-gen render -i examples/inputs/complex-dashboard.tsx -o build/react-complex.png --content-type code --language tsx --syntax-theme vscode-dark --line-numbers --line-number-style vscode
+console-gen render -i examples/inputs/SpringApplication.java -o build/spring.png --content-type code --language java --syntax-theme intellij-light --line-numbers --line-number-style idea
 ```
 
 Language detection is enabled by default for code mode, using the input filename and content:
@@ -117,13 +196,33 @@ Config keys map to `RenderOptions` fields. Short aliases `width` and `theme` are
   "frame": "mac",
   "title": "Source Preview",
   "width_chars": 88,
+  "wrap_lines": false,
   "font_size": 15,
   "line_spacing": 6,
   "padding_x": 24,
   "padding_y": 20,
-  "radius": 12
+  "margin": 14,
+  "radius": 12,
+  "rounded_corners": false,
+  "line_numbers": true,
+  "line_number_start": 1,
+  "line_number_style": "vscode",
+  "indent_guides": true,
+  "indent_size": 4
 }
 ```
+
+Available line number styles:
+
+```text
+plain, vscode, idea
+```
+
+If `line_spacing` is omitted, `idea` line number style uses a larger default spacing than `plain` and `vscode`. Set `line_spacing` explicitly to override the style default.
+
+When rendering code, `line_number_style: "vscode"` enables vertical indentation guides by default. Use `indent_guides: false` or `--no-indent-guides` to disable them, and `indent_size` or `--indent-size` to change the spacing.
+
+`width_chars` is a minimum width. Long lines expand the image width unless `wrap_lines: true` or `--wrap-lines` is used.
 
 Available frames:
 

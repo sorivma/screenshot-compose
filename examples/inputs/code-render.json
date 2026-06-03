@@ -4,9 +4,17 @@
   "frame": "mac",
   "title": "Source Preview",
   "width_chars": 88,
+  "wrap_lines": false,
   "font_size": 15,
   "line_spacing": 6,
   "padding_x": 24,
   "padding_y": 20,
-  "radius": 12
+  "margin": 14,
+  "radius": 12,
+  "rounded_corners": false,
+  "line_numbers": true,
+  "line_number_start": 1,
+  "line_number_style": "vscode",
+  "indent_guides": true,
+  "indent_size": 4
 }

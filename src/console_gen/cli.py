@@ -34,12 +34,15 @@ def _build_options(args: argparse.Namespace) -> RenderOptions:
     values = _load_config(args.config)
     cli_values = {
         "width_chars": args.width,
+        "wrap_lines": args.wrap_lines,
         "font_size": args.font_size,
         "line_spacing": args.line_spacing,
         "padding_x": args.padding_x,
         "padding_y": args.padding_y,
+        "margin": args.margin,
         "titlebar_height": args.titlebar_height,
         "radius": args.radius,
+        "rounded_corners": args.rounded_corners,
         "title": args.title,
         "theme_name": args.theme,
         "frame": args.frame,
@@ -48,6 +51,11 @@ def _build_options(args: argparse.Namespace) -> RenderOptions:
         "syntax_theme": args.syntax_theme,
         "guess_language": args.guess_language,
         "theme_file": args.theme_file,
+        "line_numbers": args.line_numbers,
+        "line_number_start": args.line_number_start,
+        "line_number_style": args.line_number_style,
+        "indent_guides": args.indent_guides,
+        "indent_size": args.indent_size,
     }
     values.update({key: value for key, value in cli_values.items() if value is not None})
     return RenderOptions(**values)
@@ -95,12 +103,32 @@ def build_parser() -> argparse.ArgumentParser:
     render_parser.add_argument("--theme-file", help="JSON file with custom terminal and syntax themes")
     render_parser.add_argument("--title", help="Terminal window title")
     render_parser.add_argument("--width", type=int, help="Terminal width in characters")
+    render_parser.add_argument(
+        "--wrap-lines",
+        action="store_true",
+        dest="wrap_lines",
+        default=None,
+        help="Wrap lines longer than --width",
+    )
+    render_parser.add_argument(
+        "--no-wrap-lines",
+        action="store_false",
+        dest="wrap_lines",
+        help="Expand image width for long lines",
+    )
     render_parser.add_argument("--font-size", type=int, help="Terminal font size in pixels")
     render_parser.add_argument("--line-spacing", type=int, help="Extra pixels between text lines")
     render_parser.add_argument("--padding-x", type=int, help="Horizontal content padding in pixels")
     render_parser.add_argument("--padding-y", type=int, help="Vertical content padding in pixels")
+    render_parser.add_argument("--margin", type=int, help="Transparent outer image margin in pixels")
     render_parser.add_argument("--titlebar-height", type=int, help="Titlebar height in pixels")
     render_parser.add_argument("--radius", type=int, help="Window corner radius in pixels")
+    render_parser.add_argument(
+        "--rounded-corners",
+        action="store_true",
+        default=None,
+        help="Enable rounded window corners using --radius",
+    )
     render_parser.add_argument("--theme", help="Terminal color theme")
     render_parser.add_argument(
         "--frame",
@@ -124,6 +152,32 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Disable automatic language detection for code rendering",
     )
+    render_parser.add_argument(
+        "--line-numbers",
+        action="store_true",
+        default=None,
+        help="Render editor-style line numbers in a left gutter",
+    )
+    render_parser.add_argument("--line-number-start", type=int, help="First rendered line number")
+    render_parser.add_argument(
+        "--line-number-style",
+        choices=["plain", "vscode", "idea"],
+        help="Line number gutter style",
+    )
+    render_parser.add_argument(
+        "--indent-guides",
+        action="store_true",
+        dest="indent_guides",
+        default=None,
+        help="Render vertical indentation guides",
+    )
+    render_parser.add_argument(
+        "--no-indent-guides",
+        action="store_false",
+        dest="indent_guides",
+        help="Disable vertical indentation guides",
+    )
+    render_parser.add_argument("--indent-size", type=int, help="Indent guide step in spaces")
     render_parser.set_defaults(func=render_command)
 
     themes_parser = subparsers.add_parser("themes", help="List built-in and custom themes")
