@@ -6,7 +6,7 @@ from console_gen.project import load_options_config, load_project, render_projec
 
 
 def test_load_project_resolves_defaults_aliases_and_paths():
-    resources = load_project(Path("examples/console-gen.yml"))
+    resources = load_project(Path("examples/screenshot-compose.yml"))
 
     python = resources[0]
     terminal = resources[2]
@@ -43,7 +43,7 @@ def test_yaml_options_config_uses_same_shape_as_json(tmp_path: Path):
 def test_render_project_can_render_selected_resource(tmp_path: Path):
     source = tmp_path / "hello.py"
     source.write_text("print('hello')\n", encoding="utf-8")
-    project = tmp_path / "console-gen.yml"
+    project = tmp_path / "screenshot-compose.yml"
     output = tmp_path / "hello.png"
     skipped = tmp_path / "skipped.png"
     project.write_text(

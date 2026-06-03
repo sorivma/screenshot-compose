@@ -1,4 +1,4 @@
-"""Command-line entry point for console-gen."""
+"""Command-line entry point for screenshot-compose."""
 
 from __future__ import annotations
 
@@ -69,8 +69,8 @@ def _build_options(args: argparse.Namespace) -> RenderOptions:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="console-gen",
-        description="Render console logs as realistic terminal screenshots",
+        prog="screenshot-compose",
+        description="Render terminal logs and source code screenshots from declarative project files",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -163,7 +163,7 @@ def build_parser() -> argparse.ArgumentParser:
     themes_parser.set_defaults(func=themes_command)
 
     apply_parser = subparsers.add_parser("apply", help="Render resources from a YAML project file")
-    apply_parser.add_argument("-f", "--file", default="console-gen.yml", help="Project file path")
+    apply_parser.add_argument("-f", "--file", default="screenshot-compose.yml", help="Project file path")
     apply_parser.add_argument("names", nargs="*", help="Optional render resource names to render")
     apply_parser.set_defaults(func=apply_command)
 

@@ -1,6 +1,6 @@
-# console-gen
+﻿# screenshot-compose
 
-`console-gen` turns console logs into PNG screenshots that look like real terminal windows. It is designed for laboratory reports, coursework, and technical documentation where pasted plain text looks too artificial.
+`screenshot-compose` renders terminal logs and source code into polished PNG screenshots from CLI flags or compose-style YAML project files. It is built for documentation, coursework, reports, and repeatable screenshot pipelines where plain pasted text is not enough.
 
 ## Features
 
@@ -129,63 +129,63 @@ pip install --user -e .[dev]
 After installation the command is available as:
 
 ```powershell
-console-gen --help
+screenshot-compose --help
 ```
 
 ## Usage
 
 ```powershell
-console-gen render -i lab.log -o build/lab-console.png
+screenshot-compose render -i lab.log -o build/lab-console.png
 ```
 
 Common options:
 
 ```powershell
-console-gen render -i lab.log -o build/windows.png --frame windows
-console-gen render -i lab.log -o build/macos.png --frame mac
-console-gen render -i lab.log -o build/ubuntu.png --frame ubuntu
-console-gen render -i lab.log -o build/block.png --frame frameless
-console-gen render -i lab.log -o build/large.png --width 110 --font-size 16
-console-gen render -i lab.log -o build/wrapped.png --width 110 --wrap-lines
-console-gen render -i lab.log -o build/tight.png --frame frameless --margin 0 --padding-x 0 --padding-y 0
-console-gen render -i lab.log -o build/rounded.png --rounded-corners --radius 12
+screenshot-compose render -i lab.log -o build/windows.png --frame windows
+screenshot-compose render -i lab.log -o build/macos.png --frame mac
+screenshot-compose render -i lab.log -o build/ubuntu.png --frame ubuntu
+screenshot-compose render -i lab.log -o build/block.png --frame frameless
+screenshot-compose render -i lab.log -o build/large.png --width 110 --font-size 16
+screenshot-compose render -i lab.log -o build/wrapped.png --width 110 --wrap-lines
+screenshot-compose render -i lab.log -o build/tight.png --frame frameless --margin 0 --padding-x 0 --padding-y 0
+screenshot-compose render -i lab.log -o build/rounded.png --rounded-corners --radius 12
 ```
 
 Render syntax-highlighted code:
 
 ```powershell
-console-gen render -i examples/inputs/example.py -o build/python-code.png --content-type code --language python --syntax-theme vscode-dark
-console-gen render -i examples/inputs/Vagrantfile -o build/vagrantfile.png --content-type code --language ruby --syntax-theme intellij-dark
-console-gen render -i examples/inputs/ansible-playbook.yml -o build/ansible.png --content-type code --language yaml --syntax-theme vscode-light
-console-gen render -i examples/inputs/example.py -o build/python-lines.png --content-type code --line-numbers --line-number-style vscode --line-number-start 100
-console-gen render -i examples/inputs/example.py -o build/python-idea-lines.png --content-type code --syntax-theme intellij-dark --line-numbers --line-number-style idea
-console-gen render -i examples/inputs/example.py -o build/python-no-guides.png --content-type code --line-numbers --line-number-style vscode --no-indent-guides
+screenshot-compose render -i examples/inputs/example.py -o build/python-code.png --content-type code --language python --syntax-theme vscode-dark
+screenshot-compose render -i examples/inputs/Vagrantfile -o build/vagrantfile.png --content-type code --language ruby --syntax-theme intellij-dark
+screenshot-compose render -i examples/inputs/ansible-playbook.yml -o build/ansible.png --content-type code --language yaml --syntax-theme vscode-light
+screenshot-compose render -i examples/inputs/example.py -o build/python-lines.png --content-type code --line-numbers --line-number-style vscode --line-number-start 100
+screenshot-compose render -i examples/inputs/example.py -o build/python-idea-lines.png --content-type code --syntax-theme intellij-dark --line-numbers --line-number-style idea
+screenshot-compose render -i examples/inputs/example.py -o build/python-no-guides.png --content-type code --line-numbers --line-number-style vscode --no-indent-guides
 ```
 
 Render framework examples:
 
 ```powershell
-console-gen render -i examples/inputs/react-dashboard.tsx -o build/react.png --content-type code --language tsx --syntax-theme vscode-dark --line-numbers --line-number-style vscode
-console-gen render -i examples/inputs/complex-dashboard.tsx -o build/react-complex.png --content-type code --language tsx --syntax-theme vscode-dark --line-numbers --line-number-style vscode
-console-gen render -i examples/inputs/SpringApplication.java -o build/spring.png --content-type code --language java --syntax-theme intellij-light --line-numbers --line-number-style idea
+screenshot-compose render -i examples/inputs/react-dashboard.tsx -o build/react.png --content-type code --language tsx --syntax-theme vscode-dark --line-numbers --line-number-style vscode
+screenshot-compose render -i examples/inputs/complex-dashboard.tsx -o build/react-complex.png --content-type code --language tsx --syntax-theme vscode-dark --line-numbers --line-number-style vscode
+screenshot-compose render -i examples/inputs/SpringApplication.java -o build/spring.png --content-type code --language java --syntax-theme intellij-light --line-numbers --line-number-style idea
 ```
 
 Language detection is enabled by default for code mode, using the input filename and content:
 
 ```powershell
-console-gen render -i examples/inputs/ansible-playbook.yml -o build/ansible-auto.png --content-type code
+screenshot-compose render -i examples/inputs/ansible-playbook.yml -o build/ansible-auto.png --content-type code
 ```
 
 List available built-in themes:
 
 ```powershell
-console-gen themes
+screenshot-compose themes
 ```
 
 For repeatable output, use a JSON config:
 
 ```powershell
-console-gen render -i examples/inputs/example.py -o build/python-config.png --config examples/inputs/code-render.json --language python
+screenshot-compose render -i examples/inputs/example.py -o build/python-config.png --config examples/inputs/code-render.json --language python
 ```
 
 Config keys map to `RenderOptions` fields. Short aliases `width` and `theme` are also accepted:
@@ -216,8 +216,8 @@ Config keys map to `RenderOptions` fields. Short aliases `width` and `theme` are
 For larger sets of screenshots, use a YAML project file:
 
 ```powershell
-console-gen apply -f examples/console-gen.yml
-console-gen apply -f examples/console-gen.yml python ansible
+screenshot-compose apply -f examples/screenshot-compose.yml
+screenshot-compose apply -f examples/screenshot-compose.yml python ansible
 ```
 
 Project files describe named render resources with shared defaults:
@@ -381,9 +381,9 @@ Custom theme files use the same JSON shape as the built-in theme resource. They 
 Use it from the CLI:
 
 ```powershell
-console-gen themes --theme-file themes.json
-console-gen render -i lab.log -o build/lab.png --theme-file themes.json --theme lab
-console-gen render -i app.py -o build/app.png --content-type code --theme-file themes.json --theme lab --syntax-theme lab-code
+screenshot-compose themes --theme-file themes.json
+screenshot-compose render -i lab.log -o build/lab.png --theme-file themes.json --theme lab
+screenshot-compose render -i app.py -o build/app.png --content-type code --theme-file themes.json --theme lab --syntax-theme lab-code
 ```
 
 The same `theme_file`, `theme`, and `syntax_theme` keys can be placed in a render config. Relative `theme_file` paths are resolved from the config file directory.
