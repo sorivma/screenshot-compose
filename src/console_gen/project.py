@@ -9,7 +9,8 @@ from typing import Any
 
 import yaml
 
-from .renderer import RenderOptions, render_log_file
+from .renderer import RenderOptions, render_log_file, validate_render_options
+from .schemas import validate_instance
 
 
 @dataclass(frozen=True)
@@ -47,6 +48,7 @@ def load_project(project_path: str | Path) -> list[RenderResource]:
         raise ValueError("Project file must contain an object")
 
     version = raw.get("version", 1)
+    validate_instance(raw, int(version) if str(version).isdigit() else version)
     if str(version) != "1":
         raise ValueError(f"Unsupported project version: {version}")
 
@@ -83,19 +85,64 @@ def load_project(project_path: str | Path) -> list[RenderResource]:
     return resources
 
 
-def render_project(project_path: str | Path, names: list[str] | None = None) -> list[Path]:
-    selected_names = set(names or [])
-    resources = load_project(project_path)
-    unknown_names = sorted(selected_names - {resource.name for resource in resources})
-    if unknown_names:
-        raise ValueError(f"Unknown render resource(s): {', '.join(unknown_names)}")
+def render_project(
+    project_path: str | Path,
+    names: list[str] | None = None,
+    *,
+    dry_run: bool = False,
+    force: bool = True,
+    output_root: str | Path | None = None,
+) -> list[Path]:
+    resources = select_resources(load_project(project_path), names)
+    _validate_inputs(resources)
+    for resource in resources:
+        check_output_path(resource.output_path, output_root, force)
+
+    if dry_run:
+        return [resource.output_path for resource in resources]
 
     outputs: list[Path] = []
     for resource in resources:
-        if selected_names and resource.name not in selected_names:
-            continue
         outputs.append(render_log_file(resource.input_path, resource.output_path, resource.options))
     return outputs
+
+
+def validate_project(project_path: str | Path, names: list[str] | None = None) -> list[RenderResource]:
+    """Validate a project and ensure all selected input files exist."""
+    resources = select_resources(load_project(project_path), names)
+    _validate_inputs(resources)
+    return resources
+
+
+def _validate_inputs(resources: list[RenderResource]) -> None:
+    for resource in resources:
+        validate_render_options(resource.options)
+    missing_inputs = [resource.input_path for resource in resources if not resource.input_path.is_file()]
+    if missing_inputs:
+        formatted = ", ".join(str(path) for path in missing_inputs)
+        raise ValueError(f"Missing input file(s): {formatted}")
+
+
+def check_output_path(output: Path, output_root: str | Path | None, force: bool) -> None:
+    """Reject unsafe output paths and accidental overwrites."""
+    output = output.resolve()
+    if output_root:
+        root = Path(output_root).resolve()
+        if not output.is_relative_to(root):
+            raise ValueError(f"Output path is outside --output-root: {output}")
+    if output.exists() and not force:
+        raise FileExistsError(f"Output already exists; use --force to overwrite: {output}")
+
+
+def select_resources(resources: list[RenderResource], names: list[str] | None = None) -> list[RenderResource]:
+    """Return selected resources, rejecting unknown names."""
+    selected_names = set(names or [])
+    unknown_names = sorted(selected_names - {resource.name for resource in resources})
+    if unknown_names:
+        raise ValueError(f"Unknown render resource(s): {', '.join(unknown_names)}")
+    if not selected_names:
+        return resources
+    return [resource for resource in resources if resource.name in selected_names]
 
 
 def normalize_options(raw: dict[str, Any], base_dir: Path) -> dict[str, object]:

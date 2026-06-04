@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from PIL import Image
+import pytest
 
 from console_gen.project import load_options_config, load_project, render_project
 
@@ -103,3 +104,25 @@ def test_render_project_can_render_selected_resource(tmp_path: Path):
     assert not skipped.exists()
     with Image.open(output) as image:
         assert image.format == "PNG"
+
+
+def test_validate_project_rejects_unknown_theme(tmp_path: Path):
+    source = tmp_path / "input.log"
+    source.write_text("hello", encoding="utf-8")
+    project = tmp_path / "project.yml"
+    project.write_text(
+        """
+version: 1
+renders:
+  bad:
+    input: input.log
+    output: output.png
+    theme: missing-theme
+""",
+        encoding="utf-8",
+    )
+
+    from console_gen.project import validate_project
+
+    with pytest.raises(ValueError, match="Unknown terminal theme"):
+        validate_project(project)

@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.screenshot-compose.dev/project/v1.json",
+  "title": "screenshot-compose project",
+  "type": "object",
+  "additionalProperties": {"type": "object"},
+  "required": ["renders"],
+  "properties": {
+    "version": {
+      "default": 1,
+      "oneOf": [{"const": 1}, {"const": "1"}]
+    },
+    "defaults": {
+      "oneOf": [
+        {"$ref": "#/$defs/options"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["render"],
+          "properties": {"render": {"$ref": "#/$defs/options"}}
+        }
+      ]
+    },
+    "renders": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"$ref": "#/$defs/resource"}
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "options": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "width": {"type": "integer", "minimum": 1},
+        "width_chars": {"type": "integer", "minimum": 1},
+        "wrap_lines": {"type": "boolean"},
+        "font_size": {"type": "integer", "minimum": 1},
+        "line_spacing": {"type": ["integer", "null"], "minimum": 0},
+        "padding_x": {"type": "integer", "minimum": 0},
+        "padding_y": {"type": "integer", "minimum": 0},
+        "margin": {"type": ["integer", "null"], "minimum": 0},
+        "titlebar_height": {"type": "integer", "minimum": 0},
+        "radius": {"type": "integer", "minimum": 0},
+        "rounded_corners": {"type": "boolean"},
+        "title": {"type": "string"},
+        "theme": {"$ref": "#/$defs/nonEmptyString"},
+        "theme_name": {"$ref": "#/$defs/nonEmptyString"},
+        "frame": {"enum": ["windows", "mac", "ubuntu", "frameless"]},
+        "content_type": {"enum": ["log", "code"]},
+        "language": {"type": ["string", "null"]},
+        "syntax_theme": {"$ref": "#/$defs/nonEmptyString"},
+        "guess_language": {"type": "boolean"},
+        "theme_file": {"type": ["string", "null"]},
+        "line_numbers": {"type": "boolean"},
+        "line_number_start": {"type": "integer"},
+        "line_number_style": {"enum": ["plain", "vscode", "idea"]},
+        "indent_guides": {"type": ["boolean", "null"]},
+        "indent_size": {"type": "integer", "minimum": 1},
+        "command_highlight": {
+          "type": ["string", "null"],
+          "enum": ["powershell", "cmd", "wsl", "ubuntu", null]
+        }
+      }
+    },
+    "resource": {
+      "type": "object",
+      "required": ["input", "output"],
+      "properties": {
+        "input": {"$ref": "#/$defs/nonEmptyString"},
+        "output": {"$ref": "#/$defs/nonEmptyString"},
+        "options": {"$ref": "#/$defs/options"},
+        "width": {"type": "integer", "minimum": 1},
+        "width_chars": {"type": "integer", "minimum": 1},
+        "wrap_lines": {"type": "boolean"},
+        "font_size": {"type": "integer", "minimum": 1},
+        "line_spacing": {"type": ["integer", "null"], "minimum": 0},
+        "padding_x": {"type": "integer", "minimum": 0},
+        "padding_y": {"type": "integer", "minimum": 0},
+        "margin": {"type": ["integer", "null"], "minimum": 0},
+        "titlebar_height": {"type": "integer", "minimum": 0},
+        "radius": {"type": "integer", "minimum": 0},
+        "rounded_corners": {"type": "boolean"},
+        "title": {"type": "string"},
+        "theme": {"$ref": "#/$defs/nonEmptyString"},
+        "theme_name": {"$ref": "#/$defs/nonEmptyString"},
+        "frame": {"enum": ["windows", "mac", "ubuntu", "frameless"]},
+        "content_type": {"enum": ["log", "code"]},
+        "language": {"type": ["string", "null"]},
+        "syntax_theme": {"$ref": "#/$defs/nonEmptyString"},
+        "guess_language": {"type": "boolean"},
+        "theme_file": {"type": ["string", "null"]},
+        "line_numbers": {"type": "boolean"},
+        "line_number_start": {"type": "integer"},
+        "line_number_style": {"enum": ["plain", "vscode", "idea"]},
+        "indent_guides": {"type": ["boolean", "null"]},
+        "indent_size": {"type": "integer", "minimum": 1},
+        "command_highlight": {
+          "type": ["string", "null"],
+          "enum": ["powershell", "cmd", "wsl", "ubuntu", null]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

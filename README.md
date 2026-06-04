@@ -85,6 +85,49 @@ Use a project file from another location:
 screenshot-compose apply -f docs/screenshots.yml
 ```
 
+Validate a project and all selected input files without rendering:
+
+```powershell
+screenshot-compose validate -f docs/screenshots.yml
+screenshot-compose validate -f docs/screenshots.yml api-log
+```
+
+## Machine-Readable Output
+
+Commands `render`, `themes`, `apply`, and `validate` support `--json`. Successful
+responses are written to `stdout`; errors are written to `stderr`. Invalid input
+returns exit code `2`, while unexpected internal failures return `1`.
+
+```powershell
+screenshot-compose validate -f screenshot-compose.yml --json
+screenshot-compose apply -f screenshot-compose.yml --json
+screenshot-compose themes --json
+screenshot-compose inspect -f screenshot-compose.yml --json
+screenshot-compose schema --json
+```
+
+The stable response shape contains `status`, `command`, `outputs`, `warnings`,
+`errors`, and `data`.
+
+`inspect` reports supported options, themes, and optionally all resources in a
+project. `schema` returns the versioned JSON Schema that is also enforced when
+project files are loaded.
+
+## Safe Writes
+
+The CLI does not overwrite existing PNG files unless `--force` is supplied.
+Use `--dry-run` to validate inputs and plan outputs, and `--output-root` to
+prevent writes outside an allowed directory.
+
+```powershell
+screenshot-compose apply -f screenshot-compose.yml --dry-run --json
+screenshot-compose apply -f screenshot-compose.yml --output-root build --force --json
+screenshot-compose apply -f screenshot-compose.yml --manifest build/screenshots.manifest.json --json
+```
+
+PNG outputs are written atomically.
+Optional manifests contain absolute paths, sizes, and SHA-256 hashes for inputs and outputs.
+
 ## YAML Project Files
 
 YAML project files are the main interface for repeatable screenshot sets. They describe named render resources, common defaults, input files, output files, and per-resource overrides.
