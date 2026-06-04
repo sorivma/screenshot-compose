@@ -62,6 +62,7 @@ def _build_options(args: argparse.Namespace) -> RenderOptions:
         "line_number_style": args.line_number_style,
         "indent_guides": args.indent_guides,
         "indent_size": args.indent_size,
+        "command_highlight": args.command_highlight,
     }
     values.update({key: value for key, value in cli_values.items() if value is not None})
     return RenderOptions(**values)
@@ -156,6 +157,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Disable vertical indentation guides",
     )
     render_parser.add_argument("--indent-size", type=int, help="Indent guide step in spaces")
+    render_parser.add_argument(
+        "--command-highlight",
+        choices=["powershell", "cmd", "wsl", "ubuntu"],
+        help="Syntax-highlight entered commands after shell prompts",
+    )
     render_parser.set_defaults(func=render_command)
 
     themes_parser = subparsers.add_parser("themes", help="List built-in and custom themes")

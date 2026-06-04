@@ -11,14 +11,31 @@ def test_load_project_resolves_defaults_aliases_and_paths():
     python = resources[0]
     terminal = resources[2]
 
-    assert python.name == "python"
+    assert len(resources) >= 60
+    assert python.name == "project-python"
     assert python.input_path.name == "example.py"
     assert python.options.width_chars == 88
     assert python.options.theme_name == "auto"
     assert python.options.content_type == "code"
     assert python.options.language == "python"
-    assert terminal.options.theme_name == "powershell"
+    assert terminal.options.theme_name == "ubuntu"
+    assert terminal.options.command_highlight == "ubuntu"
     assert not terminal.options.line_numbers
+
+
+def test_example_pngs_are_declared_in_gallery_project():
+    project_path = Path("examples/screenshot-compose.yml")
+    resources = load_project(project_path)
+    example_root = project_path.parent.resolve()
+
+    declared_outputs = {
+        resource.output_path
+        for resource in resources
+        if resource.output_path.is_relative_to(example_root)
+    }
+    existing_pngs = {path.resolve() for path in example_root.glob("**/*.png")}
+
+    assert existing_pngs <= declared_outputs
 
 
 def test_yaml_options_config_uses_same_shape_as_json(tmp_path: Path):

@@ -85,6 +85,104 @@ def test_plain_text_uses_theme_color_without_auto_coloring():
     assert not spans[0].style.bold
 
 
+def test_command_highlight_colors_powershell_entered_command():
+    numbered_lines = _build_numbered_visual_lines(
+        "PS C:\\Users\\me> Get-ChildItem -Force",
+        width_chars=80,
+        default_fg="#eeeeec",
+        options=RenderOptions(command_highlight="powershell", syntax_theme="vscode-dark"),
+    )
+    spans = numbered_lines[0][0]
+
+    assert spans[0].text == "PS C:\\Users\\me> "
+    assert spans[0].style.fg == "#eeeeec"
+    assert any(span.text.strip() and span.style.fg != "#eeeeec" for span in spans[1:])
+
+
+def test_command_highlight_supports_cmd_wsl_and_ubuntu_prompts():
+    cmd_lines = _build_numbered_visual_lines(
+        "C:\\Users\\me> dir /b",
+        width_chars=80,
+        default_fg="#eeeeec",
+        options=RenderOptions(command_highlight="cmd", syntax_theme="vscode-dark"),
+    )
+    wsl_lines = _build_numbered_visual_lines(
+        "me@ubuntu:~/lab$ pytest -q",
+        width_chars=80,
+        default_fg="#eeeeec",
+        options=RenderOptions(command_highlight="wsl", syntax_theme="vscode-dark"),
+    )
+    ubuntu_lines = _build_numbered_visual_lines(
+        "sorivma@ubuntu:~/lab$ terraform plan",
+        width_chars=80,
+        default_fg="#eeeeec",
+        options=RenderOptions(command_highlight="ubuntu", syntax_theme="vscode-dark"),
+    )
+
+    assert cmd_lines[0][0][0].text == "C:\\Users\\me> "
+    assert [span.text for span in wsl_lines[0][0][:4]] == ["me@ubuntu", ":", "~/lab", "$ "]
+    assert [span.text for span in ubuntu_lines[0][0][:4]] == ["sorivma@ubuntu", ":", "~/lab", "$ "]
+    assert any(span.style.fg != "#eeeeec" for span in cmd_lines[0][0][1:])
+    assert any(span.style.fg != "#eeeeec" for span in wsl_lines[0][0][1:])
+    assert any(span.style.fg != "#eeeeec" for span in ubuntu_lines[0][0][1:])
+
+
+def test_ubuntu_prompt_colors_user_host_and_path():
+    numbered_lines = _build_numbered_visual_lines(
+        "sorivma@DESKTOP-LR9G161:~$ ls -la",
+        width_chars=80,
+        default_fg="#eeeeec",
+        options=RenderOptions(command_highlight="ubuntu", syntax_theme="vscode-dark"),
+    )
+    spans = numbered_lines[0][0]
+
+    assert spans[0].text == "sorivma@DESKTOP-LR9G161"
+    assert spans[0].style.fg == "#8ae234"
+    assert spans[2].text == "~"
+    assert spans[2].style.fg == "#729fcf"
+    assert spans[3].text == "$ "
+
+
+def test_command_highlight_colors_common_option_forms():
+    wsl_lines = _build_numbered_visual_lines(
+        "sorivma@ubuntu:~$ docker run -t ubuntu --version",
+        width_chars=100,
+        default_fg="#eeeeec",
+        options=RenderOptions(command_highlight="ubuntu", syntax_theme="vscode-dark"),
+    )
+    cmd_lines = _build_numbered_visual_lines(
+        "C:\\Users\\me> dir /b",
+        width_chars=80,
+        default_fg="#eeeeec",
+        options=RenderOptions(command_highlight="cmd", syntax_theme="vscode-dark"),
+    )
+
+    wsl_options = {span.text: span.style.fg for span in wsl_lines[0][0] if span.text in {"-t", "--version"}}
+    cmd_options = {span.text: span.style.fg for span in cmd_lines[0][0] if span.text == "/b"}
+
+    assert wsl_options["-t"] != "#eeeeec"
+    assert wsl_options["--version"] != "#eeeeec"
+    assert cmd_options["/b"] != "#eeeeec"
+
+
+def test_command_highlight_does_not_color_regular_output():
+    numbered_lines = _build_numbered_visual_lines(
+        "response > cached",
+        width_chars=80,
+        default_fg="#eeeeec",
+        options=RenderOptions(command_highlight="cmd", syntax_theme="vscode-dark"),
+    )
+
+    assert [span.text for span in numbered_lines[0][0]] == ["response > cached"]
+    assert numbered_lines[0][0][0].style.fg == "#eeeeec"
+
+
+def test_log_render_without_command_highlight_does_not_resolve_syntax_theme():
+    image = render_log("plain output", RenderOptions(width_chars=40, font_size=14, syntax_theme="missing"))
+
+    assert image.size[0] > 0
+
+
 def test_parse_line_preserves_ansi_colors():
     spans = _parse_line("ok \x1b[31mfail\x1b[0m", "#eeeeec")
 

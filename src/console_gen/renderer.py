@@ -10,7 +10,7 @@ from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 from pygments import lex
 from pygments.lexers import TextLexer, get_lexer_by_name, guess_lexer, guess_lexer_for_filename
-from pygments.token import Text, Token
+from pygments.token import Keyword, Name, Text, Token
 
 from .ansi import TextSpan, TextStyle, parse_ansi, strip_ansi
 from .themes import AUTO_THEMES, SYNTAX_THEMES, THEMES, SyntaxTheme, TerminalTheme, load_theme_catalog
@@ -41,6 +41,7 @@ class RenderOptions:
     line_number_style: str = "plain"
     indent_guides: bool | None = None
     indent_size: int = 4
+    command_highlight: str | None = None
 
 
 @dataclass(frozen=True)
@@ -87,11 +88,10 @@ def render_code(text: str, options: RenderOptions | None = None, filename: str |
 def render_text(text: str, options: RenderOptions | None = None, filename: str | None = None) -> Image.Image:
     options = options or RenderOptions()
     theme = _resolve_theme(options)
-    syntax_theme = _resolve_syntax_theme(options)
     regular_font, bold_font = load_fonts(options.font_size)
     metrics = _font_metrics(regular_font)
 
-    default_fg = syntax_theme.text if options.content_type == "code" else theme.text
+    default_fg = _resolve_syntax_theme(options).text if options.content_type == "code" else theme.text
     numbered_visual_lines = _build_numbered_visual_lines(text, options.width_chars, default_fg, options, filename)
     if not numbered_visual_lines:
         numbered_visual_lines = [([], None)]
@@ -292,18 +292,163 @@ def _build_numbered_visual_lines(
     if options.content_type == "code":
         logical_lines = _highlight_code_lines(text, default_fg, options, filename)
     else:
-        logical_lines = _parse_logical_log_lines(text, default_fg)
+        logical_lines = _parse_logical_log_lines(text, default_fg, options)
     return _wrap_logical_lines(logical_lines, width_chars, options.line_number_start, options.wrap_lines)
 
 
-def _parse_logical_log_lines(text: str, default_fg: str) -> list[list[TextSpan]]:
+def _parse_logical_log_lines(text: str, default_fg: str, options: RenderOptions) -> list[list[TextSpan]]:
     logical_lines: list[list[TextSpan]] = []
     normalized = text.replace("\r\n", "\n").replace("\r", "\n").expandtabs(4)
 
+    command_lexer = _command_lexer(options.command_highlight)
+    syntax_theme = _resolve_syntax_theme(options) if options.command_highlight else None
     for raw_line in normalized.split("\n"):
-        logical_lines.append(_parse_line(raw_line, default_fg))
+        logical_lines.append(_parse_log_line(raw_line, default_fg, options, command_lexer, syntax_theme))
 
     return logical_lines
+
+
+def _parse_log_line(
+    raw_line: str,
+    default_fg: str,
+    options: RenderOptions,
+    command_lexer: object | None,
+    syntax_theme: SyntaxTheme | None,
+) -> list[TextSpan]:
+    if not options.command_highlight:
+        return _parse_line(raw_line, default_fg)
+    if command_lexer is None or syntax_theme is None:
+        raise ValueError(
+            "Unknown command highlight shell: "
+            f"{options.command_highlight}. Available shells: powershell, cmd, wsl, ubuntu"
+        )
+    if "\x1b[" in raw_line:
+        return _parse_line(raw_line, default_fg)
+
+    command_start = _command_start_index(raw_line, options.command_highlight)
+    if command_start is None:
+        return _parse_line(raw_line, default_fg)
+
+    prompt = raw_line[:command_start]
+    command = raw_line[command_start:]
+    spans = _highlight_prompt(prompt, options.command_highlight, default_fg)
+    spans.extend(_highlight_inline_code(command, default_fg, command_lexer, syntax_theme, options.command_highlight))
+    return spans
+
+
+def _command_lexer(shell: str | None) -> object | None:
+    if shell is None:
+        return None
+
+    aliases = {
+        "powershell": "powershell",
+        "cmd": "batch",
+        "wsl": "bash",
+        "ubuntu": "bash",
+    }
+    lexer_name = aliases.get(shell)
+    if lexer_name is None:
+        return None
+    try:
+        return get_lexer_by_name(lexer_name)
+    except Exception:
+        return TextLexer()
+
+
+def _command_start_index(raw_line: str, shell: str) -> int | None:
+    import re
+
+    patterns = {
+        "powershell": r"^PS [^>]*>\s*",
+        "cmd": r"^(?:[A-Za-z]:\\[^>]*|\\\\[^>]+|)>\s*",
+        "wsl": r"^(?:[^@\s]+@[^:\s]+:[^#$]*[#$]|[#$])\s+",
+        "ubuntu": r"^(?:[^@\s]+@[^:\s]+:[^#$]*[#$]|[#$])\s+",
+    }
+    pattern = patterns.get(shell)
+    if not pattern:
+        return None
+    match = re.match(pattern, raw_line)
+    return match.end() if match else None
+
+
+def _highlight_inline_code(
+    text: str,
+    default_fg: str,
+    lexer: object,
+    syntax_theme: SyntaxTheme,
+    shell: str,
+) -> list[TextSpan]:
+    if shell in {"cmd", "wsl", "ubuntu"}:
+        return _highlight_shell_words(text, default_fg, syntax_theme)
+
+    spans: list[TextSpan] = []
+    for token_type, token_text in lex(text, lexer):
+        if "\n" in token_text:
+            token_text = token_text.replace("\n", "")
+        if token_text:
+            spans.append(TextSpan(token_text, _style_for_token(token_type, syntax_theme, default_fg)))
+    spans = _merge_adjacent_spans(spans)
+    if not spans or any(span.text.strip() and span.style.fg != default_fg for span in spans):
+        return spans
+    return _highlight_shell_words(text, default_fg, syntax_theme)
+
+
+def _highlight_prompt(prompt: str, shell: str, default_fg: str) -> list[TextSpan]:
+    import re
+
+    if shell in {"wsl", "ubuntu"}:
+        match = re.match(r"^([^@\s]+@[^:\s]+)(:)([^#$]*)([#$])(\s*)$", prompt)
+        if match:
+            user_host, separator, path, marker, trailing = match.groups()
+            return _merge_adjacent_spans(
+                [
+                    TextSpan(user_host, TextStyle("#8ae234", bold=True)),
+                    TextSpan(separator, TextStyle(default_fg)),
+                    TextSpan(path, TextStyle("#729fcf", bold=True)),
+                    TextSpan(marker, TextStyle(default_fg)),
+                    TextSpan(trailing, TextStyle(default_fg)),
+                ]
+            )
+    return _parse_line(prompt, default_fg)
+
+
+def _highlight_shell_words(text: str, default_fg: str, syntax_theme: SyntaxTheme) -> list[TextSpan]:
+    import re
+
+    spans: list[TextSpan] = []
+    command_style = _style_for_token(Name.Function, syntax_theme, default_fg)
+    option_style = _style_for_token(Keyword, syntax_theme, default_fg)
+    cursor = 0
+    word_index = 0
+    for match in re.finditer(r"\S+", text):
+        if match.start() > cursor:
+            spans.append(TextSpan(text[cursor : match.start()], TextStyle(default_fg)))
+        word = match.group(0)
+        if word_index == 0:
+            style = command_style
+        elif word.startswith(("-", "/")):
+            style = option_style
+        else:
+            style = TextStyle(default_fg)
+        spans.append(TextSpan(word, style))
+        cursor = match.end()
+        word_index += 1
+    if cursor < len(text):
+        spans.append(TextSpan(text[cursor:], TextStyle(default_fg)))
+    return _merge_adjacent_spans(spans)
+
+
+def _merge_adjacent_spans(spans: list[TextSpan]) -> list[TextSpan]:
+    merged: list[TextSpan] = []
+    for span in spans:
+        if not span.text:
+            continue
+        if merged and merged[-1].style == span.style:
+            previous = merged[-1]
+            merged[-1] = TextSpan(previous.text + span.text, previous.style)
+        else:
+            merged.append(span)
+    return merged
 
 
 def _wrap_logical_lines(

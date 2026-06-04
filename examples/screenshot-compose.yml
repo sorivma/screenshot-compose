@@ -1,36 +1,486 @@
 version: 1
 
-defaults:
-  render:
-    width: 88
-    font_size: 15
-    frame: mac
-    title: Source Preview
-    content_type: code
-    syntax_theme: vscode-dark
-    line_numbers: true
-    line_number_style: vscode
-    indent_guides: true
+terminal_base: &terminal_base
+  content_type: log
+  width: 100
+  font_size: 15
+  title: Build Output
+  line_numbers: false
+  indent_guides: false
+
+terminal_theme_base: &terminal_theme_base
+  <<: *terminal_base
+  input: inputs/windows.log
+  frame: windows
+  width: 64
+  title: Theme Preview
+  command_highlight: powershell
+
+code_base: &code_base
+  content_type: code
+  width: 64
+  font_size: 15
+  frame: mac
+  title: Source Preview
+  syntax_theme: vscode-dark
+  line_numbers: false
+  indent_guides: false
+
+code_lines_base: &code_lines_base
+  <<: *code_base
+  line_numbers: true
+  line_number_style: vscode
+  indent_guides: true
 
 renders:
-  python:
+  project-python:
+    <<: *code_lines_base
     input: inputs/example.py
     output: ../build/project-python.png
+    width: 88
     language: python
 
-  ansible:
+  project-ansible:
+    <<: *code_lines_base
     input: inputs/ansible-playbook.yml
     output: ../build/project-ansible.png
+    width: 88
     language: yaml
     syntax_theme: vscode-light
     frame: ubuntu
 
-  terminal:
+  project-terminal:
+    <<: *terminal_base
     input: inputs/sample.log
     output: ../build/project-terminal.png
-    content_type: log
+    frame: ubuntu
+    theme: ubuntu
+    command_highlight: ubuntu
+
+  frame-windows:
+    <<: *terminal_base
+    input: inputs/windows.log
+    output: frames/sample-windows.png
     frame: windows
-    title: Build Output
     theme: powershell
-    line_numbers: false
+    command_highlight: powershell
+
+  frame-macos:
+    <<: *terminal_base
+    input: inputs/macos.log
+    output: frames/sample-macos.png
+    frame: mac
+    theme: macos
+
+  frame-ubuntu:
+    <<: *terminal_base
+    input: inputs/ubuntu.log
+    output: frames/sample-ubuntu.png
+    frame: ubuntu
+    theme: ubuntu
+    command_highlight: ubuntu
+
+  frame-frameless:
+    <<: *terminal_base
+    input: inputs/sample.log
+    output: frames/sample-frameless.png
+    frame: frameless
+    theme: ubuntu
+    command_highlight: ubuntu
+
+  frame-frameless-tight:
+    <<: *terminal_base
+    input: inputs/sample.log
+    output: frames/sample-frameless-tight.png
+    frame: frameless
+    theme: ubuntu
+    width: 72
+    margin: 0
+    padding_x: 0
+    padding_y: 0
+    command_highlight: ubuntu
+
+  frame-long-ubuntu:
+    <<: *terminal_base
+    input: inputs/long-ubuntu.log
+    output: frames/sample-long-ubuntu.png
+    frame: ubuntu
+    theme: ubuntu
+    width: 110
+    command_highlight: ubuntu
+
+  frame-sample:
+    <<: *terminal_base
+    input: inputs/sample.log
+    output: frames/sample.png
+    frame: windows
+    theme: powershell
+    command_highlight: ubuntu
+
+  frame-python-code:
+    <<: *code_base
+    input: inputs/example.py
+    output: frames/sample-python-code.png
+    language: python
+
+  frame-vagrantfile:
+    <<: *code_base
+    input: inputs/Vagrantfile
+    output: frames/sample-vagrantfile.png
+    language: ruby
+
+  frame-ansible-playbook:
+    <<: *code_base
+    input: inputs/ansible-playbook.yml
+    output: frames/sample-ansible-playbook.png
+    width: 72
+    frame: ubuntu
+    language: yaml
+    syntax_theme: vscode-light
+
+  syntax-vscode-line-numbers:
+    <<: *code_lines_base
+    input: inputs/example.py
+    output: syntax/syntax-vscode-line-numbers.png
+    language: python
+
+  syntax-idea-line-numbers:
+    <<: *code_lines_base
+    input: inputs/example.py
+    output: syntax/syntax-idea-line-numbers.png
+    language: python
+    syntax_theme: intellij-dark
+    line_number_style: idea
     indent_guides: false
+
+  syntax-vscode-line-numbers-tight:
+    <<: *code_lines_base
+    input: inputs/example.py
+    output: syntax/syntax-vscode-line-numbers-tight.png
+    language: python
+    frame: frameless
+    width: 56
+    margin: 0
+    padding_x: 0
+    padding_y: 0
+
+  syntax-idea-line-numbers-tight:
+    <<: *code_lines_base
+    input: inputs/example.py
+    output: syntax/syntax-idea-line-numbers-tight.png
+    language: python
+    syntax_theme: intellij-dark
+    line_number_style: idea
+    indent_guides: false
+    frame: frameless
+    width: 56
+    margin: 0
+    padding_x: 0
+    padding_y: 0
+
+  language-typescript-vscode:
+    <<: *code_base
+    input: inputs/app.ts
+    output: languages/language-typescript-vscode.png
+    width: 72
+    language: typescript
+    syntax_theme: vscode-dark
+
+  language-go-idea:
+    <<: *code_base
+    input: inputs/server.go
+    output: languages/language-go-idea.png
+    width: 72
+    language: go
+    syntax_theme: intellij-dark
+
+  language-sql-github-light:
+    <<: *code_base
+    input: inputs/query.sql
+    output: languages/language-sql-github-light.png
+    width: 72
+    language: sql
+    syntax_theme: github-light
+
+  language-toml-catppuccin:
+    <<: *code_base
+    input: inputs/settings.toml
+    output: languages/language-toml-catppuccin.png
+    width: 72
+    language: toml
+    syntax_theme: catppuccin-mocha
+
+  framework-react-vscode:
+    <<: *code_base
+    input: inputs/react-dashboard.tsx
+    output: frameworks/framework-react-vscode.png
+    width: 88
+    language: tsx
+    syntax_theme: vscode-dark
+
+  framework-react-complex-vscode:
+    <<: *code_base
+    input: inputs/complex-dashboard.tsx
+    output: frameworks/framework-react-complex-vscode.png
+    width: 88
+    language: tsx
+    syntax_theme: vscode-dark
+
+  framework-vue-vscode-light:
+    <<: *code_base
+    input: inputs/vue-profile.vue
+    output: frameworks/framework-vue-vscode-light.png
+    width: 78
+    language: vue
+    syntax_theme: vscode-light
+
+  framework-fastapi-idea:
+    <<: *code_base
+    input: inputs/fastapi_app.py
+    output: frameworks/framework-fastapi-idea.png
+    width: 82
+    language: python
+    syntax_theme: intellij-dark
+
+  framework-django-idea-light:
+    <<: *code_base
+    input: inputs/django_models.py
+    output: frameworks/framework-django-idea-light.png
+    width: 82
+    language: python
+    syntax_theme: intellij-light
+
+  framework-spring-idea-light:
+    <<: *code_base
+    input: inputs/SpringApplication.java
+    output: frameworks/framework-spring-idea-light.png
+    width: 88
+    language: java
+    syntax_theme: intellij-light
+
+  theme-dark:
+    <<: *terminal_theme_base
+    output: themes/theme-dark.png
+    theme: dark
+
+  theme-light:
+    <<: *terminal_theme_base
+    output: themes/theme-light.png
+    theme: light
+
+  theme-powershell:
+    <<: *terminal_theme_base
+    output: themes/theme-powershell.png
+    theme: powershell
+
+  theme-ubuntu:
+    <<: *terminal_theme_base
+    input: inputs/ubuntu.log
+    output: themes/theme-ubuntu.png
+    frame: ubuntu
+    theme: ubuntu
+    command_highlight: ubuntu
+
+  theme-macos:
+    <<: *terminal_theme_base
+    input: inputs/macos.log
+    output: themes/theme-macos.png
+    frame: mac
+    theme: macos
+    command_highlight: null
+
+  theme-dracula:
+    <<: *terminal_theme_base
+    output: themes/theme-dracula.png
+    theme: dracula
+
+  theme-gruvbox-dark:
+    <<: *terminal_theme_base
+    output: themes/theme-gruvbox-dark.png
+    theme: gruvbox-dark
+
+  theme-gruvbox-light:
+    <<: *terminal_theme_base
+    output: themes/theme-gruvbox-light.png
+    theme: gruvbox-light
+
+  theme-nord:
+    <<: *terminal_theme_base
+    output: themes/theme-nord.png
+    theme: nord
+
+  theme-solarized-dark:
+    <<: *terminal_theme_base
+    output: themes/theme-solarized-dark.png
+    theme: solarized-dark
+
+  theme-solarized-light:
+    <<: *terminal_theme_base
+    output: themes/theme-solarized-light.png
+    theme: solarized-light
+
+  theme-monokai:
+    <<: *terminal_theme_base
+    output: themes/theme-monokai.png
+    theme: monokai
+
+  theme-one-dark:
+    <<: *terminal_theme_base
+    output: themes/theme-one-dark.png
+    theme: one-dark
+
+  theme-catppuccin-mocha:
+    <<: *terminal_theme_base
+    output: themes/theme-catppuccin-mocha.png
+    theme: catppuccin-mocha
+
+  theme-catppuccin-latte:
+    <<: *terminal_theme_base
+    output: themes/theme-catppuccin-latte.png
+    theme: catppuccin-latte
+
+  theme-tokyo-night:
+    <<: *terminal_theme_base
+    output: themes/theme-tokyo-night.png
+    theme: tokyo-night
+
+  theme-rose-pine:
+    <<: *terminal_theme_base
+    output: themes/theme-rose-pine.png
+    theme: rose-pine
+
+  theme-github-dark:
+    <<: *terminal_theme_base
+    output: themes/theme-github-dark.png
+    theme: github-dark
+
+  theme-github-light:
+    <<: *terminal_theme_base
+    output: themes/theme-github-light.png
+    theme: github-light
+
+  syntax-vscode-dark:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-vscode-dark.png
+    language: python
+    syntax_theme: vscode-dark
+
+  syntax-vscode-light:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-vscode-light.png
+    language: python
+    syntax_theme: vscode-light
+
+  syntax-intellij-dark:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-intellij-dark.png
+    language: python
+    syntax_theme: intellij-dark
+
+  syntax-intellij-light:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-intellij-light.png
+    language: python
+    syntax_theme: intellij-light
+
+  syntax-dracula:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-dracula.png
+    language: python
+    syntax_theme: dracula
+
+  syntax-gruvbox-dark:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-gruvbox-dark.png
+    language: python
+    syntax_theme: gruvbox-dark
+
+  syntax-gruvbox-light:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-gruvbox-light.png
+    language: python
+    syntax_theme: gruvbox-light
+
+  syntax-nord:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-nord.png
+    language: python
+    syntax_theme: nord
+
+  syntax-solarized-dark:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-solarized-dark.png
+    language: python
+    syntax_theme: solarized-dark
+
+  syntax-solarized-light:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-solarized-light.png
+    language: python
+    syntax_theme: solarized-light
+
+  syntax-monokai:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-monokai.png
+    language: python
+    syntax_theme: monokai
+
+  syntax-one-dark:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-one-dark.png
+    language: python
+    syntax_theme: one-dark
+
+  syntax-catppuccin-mocha:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-catppuccin-mocha.png
+    language: python
+    syntax_theme: catppuccin-mocha
+
+  syntax-catppuccin-latte:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-catppuccin-latte.png
+    language: python
+    syntax_theme: catppuccin-latte
+
+  syntax-tokyo-night:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-tokyo-night.png
+    language: python
+    syntax_theme: tokyo-night
+
+  syntax-rose-pine:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-rose-pine.png
+    language: python
+    syntax_theme: rose-pine
+
+  syntax-github-dark:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-github-dark.png
+    language: python
+    syntax_theme: github-dark
+
+  syntax-github-light:
+    <<: *code_base
+    input: inputs/example.py
+    output: syntax/syntax-github-light.png
+    language: python
+    syntax_theme: github-light

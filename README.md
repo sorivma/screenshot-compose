@@ -8,6 +8,7 @@ Use it for documentation, coursework, reports, tutorials, changelogs, and repeat
 
 - Renders terminal logs and source code to PNG.
 - Preserves ANSI SGR colors from captured command output.
+- Can syntax-highlight entered PowerShell, cmd, WSL, and Ubuntu commands in terminal logs.
 - Syntax-highlights source code through Pygments.
 - Supports Windows Terminal, macOS Terminal, Ubuntu Terminal, and frameless blocks.
 - Provides built-in terminal and syntax themes.
@@ -274,6 +275,15 @@ screenshot-compose render -i lab.log -o build/tight.png --frame frameless --marg
 screenshot-compose render -i lab.log -o build/rounded.png --rounded-corners --radius 12
 ```
 
+Highlight entered commands in terminal logs:
+
+```powershell
+screenshot-compose render -i powershell.log -o build/powershell.png --command-highlight powershell
+screenshot-compose render -i cmd.log -o build/cmd.png --command-highlight cmd
+screenshot-compose render -i wsl.log -o build/wsl.png --command-highlight wsl
+screenshot-compose render -i ubuntu.log -o build/ubuntu.png --command-highlight ubuntu
+```
+
 Render source code:
 
 ```powershell
@@ -334,6 +344,7 @@ These keys can be used in `defaults.render`, directly on a YAML resource, inside
 | `line_number_style` | string | `plain` | Gutter style: `plain`, `vscode`, or `idea`. |
 | `indent_guides` | boolean or null | `null` | Render vertical indentation guides. When omitted, enabled for code with `line_number_style: vscode`. |
 | `indent_size` | integer | `4` | Number of spaces between indentation guide columns. |
+| `command_highlight` | string or null | `null` | Highlight recognized shell prompts, entered commands, and common option forms in log mode. Supported values: `powershell`, `cmd`, `wsl`, or `ubuntu`. |
 
 Important behavior:
 
@@ -341,7 +352,7 @@ Important behavior:
 - `line_number_style: idea` uses a larger default line spacing than `plain` and `vscode`.
 - `line_number_style: vscode` enables indentation guides by default for code rendering.
 - `theme: auto` chooses terminal colors from the selected frame.
-- ANSI colors in log input are preserved; plain log text is not automatically highlighted.
+- ANSI colors in log input are preserved; plain log text is not automatically highlighted unless `command_highlight` matches a recognized shell prompt.
 
 Available frames:
 
@@ -374,6 +385,12 @@ vscode-dark, vscode-light
 ```
 
 ## Examples Gallery
+
+All images in this gallery are generated from one project file:
+
+```powershell
+screenshot-compose apply -f examples/screenshot-compose.yml
+```
 
 Frame examples:
 
@@ -431,13 +448,18 @@ Long output:
 
 ![Long Ubuntu console output](examples/frames/sample-long-ubuntu.png)
 
-Example project and input files:
+Gallery project and input files:
 
 ```text
 examples/screenshot-compose.yml
 examples/inputs/example.py
 examples/inputs/Vagrantfile
 examples/inputs/ansible-playbook.yml
+examples/inputs/windows.log
+examples/inputs/macos.log
+examples/inputs/ubuntu.log
+examples/inputs/sample.log
+examples/inputs/long-ubuntu.log
 examples/inputs/app.ts
 examples/inputs/server.go
 examples/inputs/query.sql
@@ -448,7 +470,6 @@ examples/inputs/vue-profile.vue
 examples/inputs/fastapi_app.py
 examples/inputs/django_models.py
 examples/inputs/SpringApplication.java
-examples/inputs/code-render.json
 ```
 
 ## Built-in Theme Gallery
