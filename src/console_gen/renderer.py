@@ -5,7 +5,9 @@ from __future__ import annotations
 import textwrap
 from dataclasses import dataclass, replace
 from math import ceil
+import os
 from pathlib import Path
+import tempfile
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 from pygments import lex
@@ -15,7 +17,7 @@ from pygments.token import Keyword, Name
 from .ansi import TextSpan, TextStyle, parse_ansi, strip_ansi
 from .highlighting import TokenKind, highlight_source
 from .highlighting.pygments_provider import token_kind
-from .themes import AUTO_THEMES, SYNTAX_THEMES, THEMES, SyntaxTheme, TerminalTheme, load_theme_catalog
+from .themes import SyntaxTheme, TerminalTheme, load_theme_catalog
 
 
 @dataclass(frozen=True)
@@ -72,8 +74,24 @@ def render_text_file(input_path: Path, output_path: Path, options: RenderOptions
     text = input_path.read_text(encoding="utf-8-sig")
     image = render_text(text, options, filename=input_path.name)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    image.save(output_path)
+    temp_path = _temporary_output_path(output_path)
+    try:
+        image.save(temp_path)
+        os.replace(temp_path, output_path)
+    finally:
+        temp_path.unlink(missing_ok=True)
     return output_path
+
+
+def _temporary_output_path(output_path: Path) -> Path:
+    handle = tempfile.NamedTemporaryFile(
+        prefix=f".{output_path.stem}-",
+        suffix=output_path.suffix,
+        dir=output_path.parent,
+        delete=False,
+    )
+    handle.close()
+    return Path(handle.name)
 
 
 def render_log(text: str, options: RenderOptions | None = None) -> Image.Image:
@@ -162,6 +180,13 @@ def render_text(text: str, options: RenderOptions | None = None, filename: str |
     )
 
     return image
+
+
+def validate_render_options(options: RenderOptions) -> None:
+    """Validate external option references without rendering an image."""
+    _resolve_theme(options)
+    if options.content_type == "code" or options.command_highlight:
+        _resolve_syntax_theme(options)
 
 
 def _resolve_theme(options: RenderOptions) -> TerminalTheme:

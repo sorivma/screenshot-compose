@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "screenshot-compose"
-version = "0.2.0"
+version = "0.3.0"
 description = "Declarative renderer for terminal and source-code screenshots"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -12,10 +12,11 @@ dependencies = [
     "Pillow>=10.0",
     "Pygments>=2.17",
     "PyYAML>=6.0",
+    "jsonschema>=4.22",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "ruff>=0.11"]
 
 [project.scripts]
 screenshot-compose = "console_gen.cli:main"
@@ -28,7 +29,13 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-console_gen = ["themes.json"]
+console_gen = ["themes.json", "schemas/*.json"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
