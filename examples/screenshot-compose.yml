@@ -32,6 +32,26 @@ code_lines_base: &code_lines_base
   line_number_style: vscode
   indent_guides: true
 
+language_vscode_dark: &language_vscode_dark
+  <<: *code_base
+  width: 88
+  syntax_theme: vscode-dark
+
+language_vscode_light: &language_vscode_light
+  <<: *code_base
+  width: 88
+  syntax_theme: vscode-light
+
+language_intellij_dark: &language_intellij_dark
+  <<: *code_base
+  width: 88
+  syntax_theme: intellij-dark
+
+language_intellij_light: &language_intellij_light
+  <<: *code_base
+  width: 88
+  syntax_theme: intellij-light
+
 renders:
   project-python:
     <<: *code_lines_base
@@ -178,37 +198,197 @@ renders:
     padding_x: 0
     padding_y: 0
 
-  language-typescript-vscode:
-    <<: *code_base
-    input: inputs/app.ts
-    output: languages/language-typescript-vscode.png
-    width: 72
-    language: typescript
-    syntax_theme: vscode-dark
-
-  language-go-idea:
-    <<: *code_base
+  language-go-vscode-dark:
+    <<: *language_vscode_dark
     input: inputs/server.go
-    output: languages/language-go-idea.png
-    width: 72
+    output: languages/go/vscode-dark.png
     language: go
-    syntax_theme: intellij-dark
 
-  language-sql-github-light:
-    <<: *code_base
-    input: inputs/query.sql
-    output: languages/language-sql-github-light.png
-    width: 72
-    language: sql
-    syntax_theme: github-light
+  language-go-vscode-light:
+    <<: *language_vscode_light
+    input: inputs/server.go
+    output: languages/go/vscode-light.png
+    language: go
 
-  language-toml-catppuccin:
-    <<: *code_base
-    input: inputs/settings.toml
-    output: languages/language-toml-catppuccin.png
-    width: 72
-    language: toml
-    syntax_theme: catppuccin-mocha
+  language-go-intellij-dark:
+    <<: *language_intellij_dark
+    input: inputs/server.go
+    output: languages/go/intellij-dark.png
+    language: go
+
+  language-go-intellij-light:
+    <<: *language_intellij_light
+    input: inputs/server.go
+    output: languages/go/intellij-light.png
+    language: go
+
+  language-python-vscode-dark:
+    <<: *language_vscode_dark
+    input: inputs/fastapi_app.py
+    output: languages/python/vscode-dark.png
+    language: python
+
+  language-python-vscode-light:
+    <<: *language_vscode_light
+    input: inputs/fastapi_app.py
+    output: languages/python/vscode-light.png
+    language: python
+
+  language-python-intellij-dark:
+    <<: *language_intellij_dark
+    input: inputs/fastapi_app.py
+    output: languages/python/intellij-dark.png
+    language: python
+
+  language-python-intellij-light:
+    <<: *language_intellij_light
+    input: inputs/fastapi_app.py
+    output: languages/python/intellij-light.png
+    language: python
+
+  language-java-vscode-dark:
+    <<: *language_vscode_dark
+    input: inputs/SpringApplication.java
+    output: languages/java/vscode-dark.png
+    language: java
+
+  language-java-vscode-light:
+    <<: *language_vscode_light
+    input: inputs/SpringApplication.java
+    output: languages/java/vscode-light.png
+    language: java
+
+  language-java-intellij-dark:
+    <<: *language_intellij_dark
+    input: inputs/SpringApplication.java
+    output: languages/java/intellij-dark.png
+    language: java
+
+  language-java-intellij-light:
+    <<: *language_intellij_light
+    input: inputs/SpringApplication.java
+    output: languages/java/intellij-light.png
+    language: java
+
+  language-javascript-vscode-dark:
+    <<: *language_vscode_dark
+    input: inputs/app.js
+    output: languages/javascript/vscode-dark.png
+    language: javascript
+
+  language-javascript-vscode-light:
+    <<: *language_vscode_light
+    input: inputs/app.js
+    output: languages/javascript/vscode-light.png
+    language: javascript
+
+  language-javascript-intellij-dark:
+    <<: *language_intellij_dark
+    input: inputs/app.js
+    output: languages/javascript/intellij-dark.png
+    language: javascript
+
+  language-javascript-intellij-light:
+    <<: *language_intellij_light
+    input: inputs/app.js
+    output: languages/javascript/intellij-light.png
+    language: javascript
+
+  language-jsx-vscode-dark:
+    <<: *language_vscode_dark
+    input: inputs/profile.jsx
+    output: languages/jsx/vscode-dark.png
+    language: jsx
+
+  language-jsx-vscode-light:
+    <<: *language_vscode_light
+    input: inputs/profile.jsx
+    output: languages/jsx/vscode-light.png
+    language: jsx
+
+  language-jsx-intellij-dark:
+    <<: *language_intellij_dark
+    input: inputs/profile.jsx
+    output: languages/jsx/intellij-dark.png
+    language: jsx
+
+  language-jsx-intellij-light:
+    <<: *language_intellij_light
+    input: inputs/profile.jsx
+    output: languages/jsx/intellij-light.png
+    language: jsx
+
+  language-typescript-vscode-dark:
+    <<: *language_vscode_dark
+    input: inputs/app.ts
+    output: languages/typescript/vscode-dark.png
+    language: typescript
+
+  language-typescript-vscode-light:
+    <<: *language_vscode_light
+    input: inputs/app.ts
+    output: languages/typescript/vscode-light.png
+    language: typescript
+
+  language-typescript-intellij-dark:
+    <<: *language_intellij_dark
+    input: inputs/app.ts
+    output: languages/typescript/intellij-dark.png
+    language: typescript
+
+  language-typescript-intellij-light:
+    <<: *language_intellij_light
+    input: inputs/app.ts
+    output: languages/typescript/intellij-light.png
+    language: typescript
+
+  language-tsx-vscode-dark:
+    <<: *language_vscode_dark
+    input: inputs/react-dashboard.tsx
+    output: languages/tsx/vscode-dark.png
+    language: tsx
+
+  language-tsx-vscode-light:
+    <<: *language_vscode_light
+    input: inputs/react-dashboard.tsx
+    output: languages/tsx/vscode-light.png
+    language: tsx
+
+  language-tsx-intellij-dark:
+    <<: *language_intellij_dark
+    input: inputs/react-dashboard.tsx
+    output: languages/tsx/intellij-dark.png
+    language: tsx
+
+  language-tsx-intellij-light:
+    <<: *language_intellij_light
+    input: inputs/react-dashboard.tsx
+    output: languages/tsx/intellij-light.png
+    language: tsx
+
+  language-vue-vscode-dark:
+    <<: *language_vscode_dark
+    input: inputs/vue-profile.vue
+    output: languages/vue/vscode-dark.png
+    language: vue
+
+  language-vue-vscode-light:
+    <<: *language_vscode_light
+    input: inputs/vue-profile.vue
+    output: languages/vue/vscode-light.png
+    language: vue
+
+  language-vue-intellij-dark:
+    <<: *language_intellij_dark
+    input: inputs/vue-profile.vue
+    output: languages/vue/intellij-dark.png
+    language: vue
+
+  language-vue-intellij-light:
+    <<: *language_intellij_light
+    input: inputs/vue-profile.vue
+    output: languages/vue/intellij-light.png
+    language: vue
 
   framework-react-vscode:
     <<: *code_base

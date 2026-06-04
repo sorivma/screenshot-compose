@@ -9,10 +9,12 @@ from pathlib import Path
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 from pygments import lex
-from pygments.lexers import TextLexer, get_lexer_by_name, guess_lexer, guess_lexer_for_filename
-from pygments.token import Keyword, Name, Text, Token
+from pygments.lexers import TextLexer, get_lexer_by_name
+from pygments.token import Keyword, Name
 
 from .ansi import TextSpan, TextStyle, parse_ansi, strip_ansi
+from .highlighting import TokenKind, highlight_source
+from .highlighting.pygments_provider import token_kind
 from .themes import AUTO_THEMES, SYNTAX_THEMES, THEMES, SyntaxTheme, TerminalTheme, load_theme_catalog
 
 
@@ -514,13 +516,13 @@ def _highlight_code_lines(
     filename: str | None = None,
 ) -> list[list[TextSpan]]:
     normalized = text.replace("\r\n", "\n").replace("\r", "\n").expandtabs(4)
-    lexer = _select_lexer(normalized, options, filename)
     lines: list[list[TextSpan]] = [[]]
     syntax_theme = _resolve_syntax_theme(options)
 
-    for token_type, token_text in lex(normalized, lexer):
-        style = _style_for_token(token_type, syntax_theme, default_fg)
-        parts = token_text.split("\n")
+    language = options.language if options.language or options.guess_language else "text"
+    for token in highlight_source(normalized, language, filename):
+        style = _style_for_token(token.kind, syntax_theme, default_fg)
+        parts = token.text.split("\n")
         for index, part in enumerate(parts):
             if index:
                 lines.append([])
@@ -530,28 +532,19 @@ def _highlight_code_lines(
     return lines
 
 
-def _select_lexer(text: str, options: RenderOptions, filename: str | None = None):
-    if options.language:
-        return get_lexer_by_name(options.language)
-    if options.guess_language and filename:
-        try:
-            return guess_lexer_for_filename(filename, text)
-        except Exception:
-            pass
-    if options.guess_language:
-        try:
-            return guess_lexer(text)
-        except Exception:
-            pass
-    return TextLexer()
-
-
 def _style_for_token(token_type: object, syntax_theme: SyntaxTheme, default_fg: str) -> TextStyle:
-    for parent, color, bold in syntax_theme.colors:
-        if token_type in parent:
-            return TextStyle(color, bold=bold)
-    if token_type in Text or token_type is Token:
-        return TextStyle(default_fg)
+    kind = token_type if isinstance(token_type, TokenKind) else token_kind(token_type)
+    fallbacks = {
+        TokenKind.METHOD: (TokenKind.METHOD, TokenKind.FUNCTION),
+        TokenKind.PARAMETER: (TokenKind.PARAMETER, TokenKind.VARIABLE),
+        TokenKind.PROPERTY: (TokenKind.PROPERTY, TokenKind.ATTRIBUTE, TokenKind.VARIABLE),
+        TokenKind.NAMESPACE: (TokenKind.NAMESPACE, TokenKind.VARIABLE, TokenKind.KEYWORD),
+    }
+    candidates = fallbacks.get(kind, (kind,))
+    for candidate in candidates:
+        for configured_kind, color, bold in syntax_theme.colors:
+            if configured_kind == candidate:
+                return TextStyle(color, bold=bold)
     return TextStyle(default_fg)
 
 

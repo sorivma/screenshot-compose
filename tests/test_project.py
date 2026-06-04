@@ -38,6 +38,19 @@ def test_example_pngs_are_declared_in_gallery_project():
     assert existing_pngs <= declared_outputs
 
 
+def test_language_gallery_covers_supported_provider_matrix():
+    resources = load_project(Path("examples/screenshot-compose.yml"))
+    supported_languages = {"go", "python", "java", "javascript", "jsx", "typescript", "tsx", "vue"}
+    editor_themes = {"vscode-dark", "vscode-light", "intellij-dark", "intellij-light"}
+    matrix = {
+        (resource.options.language, resource.options.syntax_theme)
+        for resource in resources
+        if resource.name.startswith("language-")
+    }
+
+    assert matrix == {(language, theme) for language in supported_languages for theme in editor_themes}
+
+
 def test_yaml_options_config_uses_same_shape_as_json(tmp_path: Path):
     config = tmp_path / "render.yml"
     config.write_text(

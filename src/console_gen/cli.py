@@ -119,7 +119,7 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["log", "code"],
         help="Render input as an ANSI log or syntax-highlighted source code",
     )
-    render_parser.add_argument("--language", help="Pygments lexer alias, for example python, yaml, ruby, terraform")
+    render_parser.add_argument("--language", help="Language alias, for example python, go, yaml, ruby, or terraform")
     render_parser.add_argument(
         "--syntax-theme",
         help="Syntax highlighting preset for --content-type code",

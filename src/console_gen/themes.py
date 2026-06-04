@@ -10,6 +10,9 @@ from typing import Any
 
 from pygments.token import Token
 
+from .highlighting.model import TokenKind
+from .highlighting.pygments_provider import token_kind
+
 
 @dataclass(frozen=True)
 class TerminalTheme:
@@ -26,7 +29,7 @@ class TerminalTheme:
 class SyntaxTheme:
     background: str
     text: str
-    colors: tuple[tuple[object, str, bool], ...]
+    colors: tuple[tuple[TokenKind, str, bool], ...]
 
 
 @dataclass(frozen=True)
@@ -135,7 +138,7 @@ def _parse_syntax_theme(name: str, raw: object) -> SyntaxTheme:
     )
 
 
-def _parse_token_color(theme_name: str, raw: object) -> tuple[object, str, bool]:
+def _parse_token_color(theme_name: str, raw: object) -> tuple[TokenKind, str, bool]:
     if not isinstance(raw, dict):
         raise ValueError(f"syntax_themes.{theme_name}.colors entries must be objects")
     token_name = raw.get("token")
@@ -145,13 +148,53 @@ def _parse_token_color(theme_name: str, raw: object) -> tuple[object, str, bool]
     return _resolve_token(token_name), color, bool(raw.get("bold", False))
 
 
-def _resolve_token(token_name: str) -> object:
-    token = Token
-    for part in token_name.split("."):
-        if not part:
-            raise ValueError(f"Invalid token name: {token_name}")
-        token = getattr(token, part)
-    return token
+def _resolve_token(token_name: str) -> TokenKind:
+    normalized = token_name.lower()
+    aliases = {
+        "text": TokenKind.TEXT,
+        "comment": TokenKind.COMMENT,
+        "keyword": TokenKind.KEYWORD,
+        "keyword.namespace": TokenKind.KEYWORD,
+        "keyword.type": TokenKind.TYPE,
+        "name": TokenKind.VARIABLE,
+        "name.other": TokenKind.VARIABLE,
+        "name.function": TokenKind.FUNCTION,
+        "name.class": TokenKind.TYPE,
+        "name.builtin": TokenKind.BUILTIN,
+        "name.decorator": TokenKind.DECORATOR,
+        "name.tag": TokenKind.TAG,
+        "name.attribute": TokenKind.ATTRIBUTE,
+        "name.variable": TokenKind.VARIABLE,
+        "name.namespace": TokenKind.NAMESPACE,
+        "string": TokenKind.STRING,
+        "number": TokenKind.NUMBER,
+        "literal": TokenKind.NUMBER,
+        "operator": TokenKind.OPERATOR,
+        "punctuation": TokenKind.PUNCTUATION,
+        "generic.heading": TokenKind.HEADING,
+        "generic.subheading": TokenKind.SUBHEADING,
+        "generic.deleted": TokenKind.DELETED,
+        "generic.inserted": TokenKind.INSERTED,
+        "error": TokenKind.ERROR,
+    }
+    try:
+        return TokenKind(normalized)
+    except ValueError:
+        pass
+    try:
+        return aliases[normalized]
+    except KeyError:
+        pass
+    try:
+        pygments_token = Token
+        for part in token_name.split("."):
+            if not part:
+                raise ValueError
+            pygments_token = getattr(pygments_token, part)
+        return token_kind(pygments_token)
+    except (AttributeError, ValueError) as exc:
+        available = ", ".join(kind.value for kind in TokenKind)
+        raise ValueError(f"Unknown syntax token: {token_name}. Available semantic tokens: {available}") from exc
 
 
 def _read_color(raw: dict[str, Any], key: str, context: str) -> str:

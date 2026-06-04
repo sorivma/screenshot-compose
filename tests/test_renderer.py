@@ -3,6 +3,7 @@ from pathlib import Path
 from PIL import Image
 from pygments.token import Name
 
+from console_gen.highlighting import TokenKind
 from console_gen.renderer import (
     RenderOptions,
     _build_numbered_visual_lines,
@@ -210,6 +211,37 @@ def test_syntax_theme_highlights_decorators_and_jsx_tokens():
     assert _style_for_token(Name.Decorator, intellij_theme, intellij_theme.text).fg == "#ffc66d"
     assert _style_for_token(Name.Tag, vscode_theme, vscode_theme.text).fg == "#569cd6"
     assert _style_for_token(Name.Attribute, vscode_theme, vscode_theme.text).fg == "#9cdcfe"
+
+
+def test_syntax_theme_maps_semantic_methods_and_properties_to_compatible_styles():
+    vscode_theme = _resolve_syntax_theme(RenderOptions(syntax_theme="vscode-dark"))
+
+    assert _style_for_token(TokenKind.METHOD, vscode_theme, vscode_theme.text).fg == "#dcdcaa"
+    assert _style_for_token(TokenKind.PROPERTY, vscode_theme, vscode_theme.text).fg == "#9cdcfe"
+
+
+def test_custom_theme_can_override_semantic_method_style(tmp_path: Path):
+    theme_file = tmp_path / "themes.json"
+    theme_file.write_text(
+        """
+        {
+          "syntax_themes": {
+            "semantic": {
+              "background": "#000000",
+              "text": "#ffffff",
+              "colors": [{"token": "method", "color": "#123456", "bold": true}]
+            }
+          }
+        }
+        """,
+        encoding="utf-8",
+    )
+    theme = _resolve_syntax_theme(RenderOptions(syntax_theme="semantic", theme_file=str(theme_file)))
+
+    style = _style_for_token(TokenKind.METHOD, theme, theme.text)
+
+    assert style.fg == "#123456"
+    assert style.bold
 
 
 def test_line_numbers_add_left_gutter_width():

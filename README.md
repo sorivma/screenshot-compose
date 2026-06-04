@@ -299,6 +299,11 @@ Language detection is enabled by default for code mode:
 screenshot-compose render -i examples/inputs/ansible-playbook.yml -o build/ansible-auto.png --content-type code
 ```
 
+Code highlighting uses isolated language providers. Go, Python, Java, JavaScript, TypeScript, JSX, TSX, and Vue
+have enriched providers that distinguish declarations, types, functions, methods, parameters, properties, and
+namespaces where the language allows it. Other languages use the Pygments fallback provider. A provider failure
+or change for one language does not change another language's implementation.
+
 List available themes:
 
 ```powershell
@@ -335,7 +340,7 @@ These keys can be used in `defaults.render`, directly on a YAML resource, inside
 | `theme` | string | alias | Short alias for `theme_name`. |
 | `frame` | string | `windows` | Window frame style: `windows`, `mac`, `ubuntu`, or `frameless`. |
 | `content_type` | string | `log` | Render mode: `log` preserves ANSI styling; `code` uses syntax highlighting. |
-| `language` | string or null | `null` | Pygments lexer alias, such as `python`, `yaml`, `tsx`, `java`, `go`, or `sql`. |
+| `language` | string or null | `null` | Language alias, such as `python`, `yaml`, `tsx`, `java`, `go`, or `sql`. |
 | `syntax_theme` | string | `vscode-dark` | Syntax theme used when `content_type: code`. |
 | `guess_language` | boolean | `true` | Try to infer the lexer from filename/content when `language` is not set. |
 | `theme_file` | string or null | `null` | JSON file with custom terminal and syntax themes. Relative paths resolve from the config/project file directory. |
@@ -420,15 +425,58 @@ Tight output with `margin: 0`, `padding_x: 0`, and `padding_y: 0`:
 | --- | --- | --- |
 | ![Tight frameless terminal block](examples/frames/sample-frameless-tight.png) | ![Tight VS Code line numbers](examples/syntax/syntax-vscode-line-numbers-tight.png) | ![Tight IntelliJ IDEA line numbers](examples/syntax/syntax-idea-line-numbers-tight.png) |
 
-Language examples:
+Supported language provider matrix:
 
-| TypeScript / VS Code | Go / IntelliJ IDEA |
-| --- | --- |
-| ![TypeScript rendered with VS Code styling](examples/languages/language-typescript-vscode.png) | ![Go rendered with IntelliJ IDEA styling](examples/languages/language-go-idea.png) |
+Each provider is rendered with VS Code Dark, VS Code Light, IntelliJ Dark, and IntelliJ Light. Images are organized
+under `examples/languages/`, with one language directory containing the four theme PNG files.
 
-| SQL / GitHub Light | TOML / Catppuccin Mocha |
-| --- | --- |
-| ![SQL rendered with GitHub Light](examples/languages/language-sql-github-light.png) | ![TOML rendered with Catppuccin Mocha](examples/languages/language-toml-catppuccin.png) |
+### Go
+
+| VS Code Dark | VS Code Light | IntelliJ Dark | IntelliJ Light |
+| --- | --- | --- | --- |
+| ![Go / VS Code Dark](examples/languages/go/vscode-dark.png) | ![Go / VS Code Light](examples/languages/go/vscode-light.png) | ![Go / IntelliJ Dark](examples/languages/go/intellij-dark.png) | ![Go / IntelliJ Light](examples/languages/go/intellij-light.png) |
+
+### Python
+
+| VS Code Dark | VS Code Light | IntelliJ Dark | IntelliJ Light |
+| --- | --- | --- | --- |
+| ![Python / VS Code Dark](examples/languages/python/vscode-dark.png) | ![Python / VS Code Light](examples/languages/python/vscode-light.png) | ![Python / IntelliJ Dark](examples/languages/python/intellij-dark.png) | ![Python / IntelliJ Light](examples/languages/python/intellij-light.png) |
+
+### Java
+
+| VS Code Dark | VS Code Light | IntelliJ Dark | IntelliJ Light |
+| --- | --- | --- | --- |
+| ![Java / VS Code Dark](examples/languages/java/vscode-dark.png) | ![Java / VS Code Light](examples/languages/java/vscode-light.png) | ![Java / IntelliJ Dark](examples/languages/java/intellij-dark.png) | ![Java / IntelliJ Light](examples/languages/java/intellij-light.png) |
+
+### JavaScript
+
+| VS Code Dark | VS Code Light | IntelliJ Dark | IntelliJ Light |
+| --- | --- | --- | --- |
+| ![JavaScript / VS Code Dark](examples/languages/javascript/vscode-dark.png) | ![JavaScript / VS Code Light](examples/languages/javascript/vscode-light.png) | ![JavaScript / IntelliJ Dark](examples/languages/javascript/intellij-dark.png) | ![JavaScript / IntelliJ Light](examples/languages/javascript/intellij-light.png) |
+
+### JSX
+
+| VS Code Dark | VS Code Light | IntelliJ Dark | IntelliJ Light |
+| --- | --- | --- | --- |
+| ![JSX / VS Code Dark](examples/languages/jsx/vscode-dark.png) | ![JSX / VS Code Light](examples/languages/jsx/vscode-light.png) | ![JSX / IntelliJ Dark](examples/languages/jsx/intellij-dark.png) | ![JSX / IntelliJ Light](examples/languages/jsx/intellij-light.png) |
+
+### TypeScript
+
+| VS Code Dark | VS Code Light | IntelliJ Dark | IntelliJ Light |
+| --- | --- | --- | --- |
+| ![TypeScript / VS Code Dark](examples/languages/typescript/vscode-dark.png) | ![TypeScript / VS Code Light](examples/languages/typescript/vscode-light.png) | ![TypeScript / IntelliJ Dark](examples/languages/typescript/intellij-dark.png) | ![TypeScript / IntelliJ Light](examples/languages/typescript/intellij-light.png) |
+
+### TSX
+
+| VS Code Dark | VS Code Light | IntelliJ Dark | IntelliJ Light |
+| --- | --- | --- | --- |
+| ![TSX / VS Code Dark](examples/languages/tsx/vscode-dark.png) | ![TSX / VS Code Light](examples/languages/tsx/vscode-light.png) | ![TSX / IntelliJ Dark](examples/languages/tsx/intellij-dark.png) | ![TSX / IntelliJ Light](examples/languages/tsx/intellij-light.png) |
+
+### Vue
+
+| VS Code Dark | VS Code Light | IntelliJ Dark | IntelliJ Light |
+| --- | --- | --- | --- |
+| ![Vue / VS Code Dark](examples/languages/vue/vscode-dark.png) | ![Vue / VS Code Light](examples/languages/vue/vscode-light.png) | ![Vue / IntelliJ Dark](examples/languages/vue/intellij-dark.png) | ![Vue / IntelliJ Light](examples/languages/vue/intellij-light.png) |
 
 Framework examples:
 
@@ -461,6 +509,8 @@ examples/inputs/ubuntu.log
 examples/inputs/sample.log
 examples/inputs/long-ubuntu.log
 examples/inputs/app.ts
+examples/inputs/app.js
+examples/inputs/profile.jsx
 examples/inputs/server.go
 examples/inputs/query.sql
 examples/inputs/settings.toml
@@ -552,13 +602,26 @@ Custom theme files use the same JSON shape as the built-in theme resource. They 
       "background": "#101820",
       "text": "#f7f7f7",
       "colors": [
-        {"token": "Keyword", "color": "#f2aa4c", "bold": true},
-        {"token": "String", "color": "#99ddff"}
+        {"token": "keyword", "color": "#f2aa4c", "bold": true},
+        {"token": "function", "color": "#ffd166"},
+        {"token": "method", "color": "#ffd166"},
+        {"token": "type", "color": "#4ec9b0"},
+        {"token": "string", "color": "#99ddff"}
       ]
     }
   }
 }
 ```
+
+Syntax themes use language-independent semantic token names:
+
+```text
+text, comment, keyword, namespace, type, function, method, parameter,
+variable, property, builtin, decorator, tag, attribute, string, number,
+operator, punctuation, heading, subheading, deleted, inserted, error
+```
+
+Existing Pygments-style names such as `Keyword`, `Name.Function`, and `String` remain supported for compatibility.
 
 Use it from YAML:
 
