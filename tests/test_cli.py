@@ -7,6 +7,7 @@ import sys
 
 import pytest
 
+import console_gen.project
 from console_gen.cli import main
 
 
@@ -121,6 +122,24 @@ def test_apply_rejects_output_outside_root(tmp_path, monkeypatch, capsys):
         "--json",
     ) == 2
     assert "outside --output-root" in json.loads(capsys.readouterr().err)["errors"][0]["message"]
+
+
+def test_apply_reports_output_write_failure_before_rendering(tmp_path, monkeypatch, capsys):
+    project, output = _write_project(tmp_path)
+
+    def fail_write_check(path):
+        assert path == output.resolve()
+        raise console_gen.project.OutputWriteError(f"Cannot write output file {path}: permission denied")
+
+    monkeypatch.setattr(console_gen.project, "_verify_output_writable", fail_write_check)
+
+    assert _run(monkeypatch, "apply", "-f", str(project), "--json") == 2
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.err)
+    assert captured.out == ""
+    assert payload["errors"][0]["code"] == "output_write_failed"
+    assert str(output.resolve()) in payload["errors"][0]["message"]
 
 
 def test_apply_writes_sha256_manifest(tmp_path, monkeypatch, capsys):

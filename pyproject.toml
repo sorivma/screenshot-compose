@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "screenshot-compose"
-version = "0.3.1"
+version = "0.3.2"
 description = "Declarative renderer for terminal and source-code screenshots"
 readme = "README.md"
 requires-python = ">=3.10"
