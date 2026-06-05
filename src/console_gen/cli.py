@@ -11,7 +11,7 @@ import yaml
 
 from .cli_output import error_payload, print_json, success_payload
 from .manifest import write_manifest
-from .project import check_output_path, load_options_config, load_project, render_project, validate_project
+from .project import OutputWriteError, check_output_path, load_options_config, load_project, render_project, validate_project
 from .renderer import RenderOptions, render_log_file
 from .schemas import load_schema
 from .themes import list_syntax_theme_names, list_terminal_theme_names
@@ -34,9 +34,9 @@ def render_command(args: argparse.Namespace) -> int:
     output_path = Path(args.output).resolve()
     if not input_path.is_file():
         raise FileNotFoundError(f"Input file not found: {input_path}")
-    check_output_path(output_path, args.output_root, args.force)
+    check_output_path(output_path, args.output_root, args.force, verify_write=not args.dry_run)
     if args.manifest:
-        check_output_path(Path(args.manifest), args.output_root, args.force)
+        check_output_path(Path(args.manifest), args.output_root, args.force, verify_write=not args.dry_run)
     if not args.dry_run:
         output_path = render_log_file(input_path, output_path, options)
     manifest = None
@@ -77,7 +77,7 @@ def themes_command(args: argparse.Namespace) -> int:
 
 def apply_command(args: argparse.Namespace) -> int:
     if args.manifest:
-        check_output_path(Path(args.manifest), args.output_root, args.force)
+        check_output_path(Path(args.manifest), args.output_root, args.force, verify_write=not args.dry_run)
     outputs = render_project(
         args.file,
         args.names,
@@ -348,6 +348,12 @@ def main() -> int:
     args = parser.parse_args()
     try:
         return args.func(args)
+    except OutputWriteError as exc:
+        if getattr(args, "json", False):
+            print_json(error_payload(args.command, "output_write_failed", str(exc)), error=True)
+        else:
+            print(f"Error: {exc}", file=sys.stderr)
+        return 2
     except (FileNotFoundError, FileExistsError, ValueError, json.JSONDecodeError, yaml.YAMLError) as exc:
         if getattr(args, "json", False):
             print_json(error_payload(args.command, "invalid_input", str(exc)), error=True)

@@ -6,6 +6,7 @@ import json
 from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 import yaml
 
@@ -19,6 +20,10 @@ class RenderResource:
     input_path: Path
     output_path: Path
     options: RenderOptions
+
+
+class OutputWriteError(OSError):
+    """Raised when an output path cannot be written before rendering starts."""
 
 
 _ALIASES = {
@@ -96,7 +101,7 @@ def render_project(
     resources = select_resources(load_project(project_path), names)
     _validate_inputs(resources)
     for resource in resources:
-        check_output_path(resource.output_path, output_root, force)
+        check_output_path(resource.output_path, output_root, force, verify_write=not dry_run)
 
     if dry_run:
         return [resource.output_path for resource in resources]
@@ -123,7 +128,7 @@ def _validate_inputs(resources: list[RenderResource]) -> None:
         raise ValueError(f"Missing input file(s): {formatted}")
 
 
-def check_output_path(output: Path, output_root: str | Path | None, force: bool) -> None:
+def check_output_path(output: Path, output_root: str | Path | None, force: bool, *, verify_write: bool = False) -> None:
     """Reject unsafe output paths and accidental overwrites."""
     output = output.resolve()
     if output_root:
@@ -132,6 +137,25 @@ def check_output_path(output: Path, output_root: str | Path | None, force: bool)
             raise ValueError(f"Output path is outside --output-root: {output}")
     if output.exists() and not force:
         raise FileExistsError(f"Output already exists; use --force to overwrite: {output}")
+    if verify_write:
+        _verify_output_writable(output)
+
+
+def _verify_output_writable(output: Path) -> None:
+    parent = output.parent
+    try:
+        parent.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise OutputWriteError(f"Cannot create output directory for {output}: {exc}") from exc
+
+    temp_path = parent / f".{output.name}.write-test-{uuid4().hex}.tmp"
+    try:
+        with temp_path.open("xb") as handle:
+            handle.write(b"")
+    except OSError as exc:
+        raise OutputWriteError(f"Cannot write output file {output}: {exc}") from exc
+    finally:
+        temp_path.unlink(missing_ok=True)
 
 
 def select_resources(resources: list[RenderResource], names: list[str] | None = None) -> list[RenderResource]:
